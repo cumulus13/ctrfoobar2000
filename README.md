@@ -27,7 +27,8 @@ Usage
 
 Dependency
 ------------------
-+ COMServer2Helper
++ Foobar2000 COMServer2Helper
++ Foobar2000 HTTP Control
 
 Author
 -----------

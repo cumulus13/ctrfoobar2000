@@ -1,4 +1,4 @@
-__version__ = "1.0"
+__version__ = "1.1"
 __test__ = "0.1"
 __sdk__ = "all"
 __build__ = "2.7"

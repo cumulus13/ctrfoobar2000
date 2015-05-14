@@ -8,8 +8,9 @@ import win32com.client
 import win32gui
 import datetime
 import optparse
+import sys
 
-ProgID = "self.Application.0.7"
+ProgID = "Foobar2000.Application.0.7"
 foobar_COM_object = win32com.client.Dispatch(ProgID)
 playback = foobar_COM_object.Playback
 
@@ -18,7 +19,7 @@ class foobar(object):
         super(foobar, self)
 
     def isPlaying(self):
-      return playback.IsPlaying
+        return playback.IsPlaying
 
     def play(self):
         if self.isPaused():
@@ -27,25 +28,25 @@ class foobar(object):
             playback.Start()
 
     def stop(self):
-       playback.Stop()
+        playback.Stop()
 
     def pauseplay(self):
-       playback.Pause()
+        playback.Pause()
 
     def isPaused(self):
-      return playback.IsPaused
+        return playback.IsPaused
 
     def next(self):
-       playback.Next()
+        playback.Next()
 
     def previous(self):
-       playback.Previous()
+        playback.Previous()
 
     def playRandom(self):
-       playback.Random()
+        playback.Random()
 
     def seekPosition(self):
-       return playback.Position
+        return playback.Position
 
     def lengthOfTrack(self):
         return str(playback.FormatTitle("[%length%]"))
@@ -86,7 +87,7 @@ class foobar(object):
                 return artist
         else:
             return "Check foobar running or not"
-            
+
 
     def getCurrentAlbum(self):
         if self.isPlaying():
@@ -97,7 +98,7 @@ class foobar(object):
                 return album
         else:
             return "Check foobar running or not"
-            
+
 
     def isCurrentlyPlaying(self):
         return 'Currently playing "{0}" by "{1}"'.format(self.getCurrentTrack(),self.getCurrentArtist())
@@ -120,7 +121,10 @@ class foobar(object):
 
         except:
             print "\t Error communication with Foobar2000 COM Server !"
-
+            
+    def check_connection(self, url=None):
+        print "COM: NOT HTTP Control !"
+    
     def usage(self, print_help=None):
         print "\n"
         # try:
@@ -168,4 +172,3 @@ if __name__ == "__main__":
 
     f = foobar()
     f.usage()
-

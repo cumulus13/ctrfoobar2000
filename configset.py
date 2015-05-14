@@ -8,7 +8,7 @@ import re
 from collections import OrderedDict
 
 __vesion__ = '1.3'
-__test__ = '0.2'
+__test__ = '0.4'
 __sdk__ = '2.7'
 __platform__ = 'all'
 __url__ = 'licface@yahoo.com'
@@ -177,6 +177,7 @@ def read_config6(section, option, filename=''): #format result: {aaa:[bbb, ccc],
     return data
 
 def write_config(section, option, filename='', value=None):
+    #cfg = ConfigParser.RawConfigParser(allow_no_value=True, dict_type=MultiOrderedDict) 
     if not value == None:
         if os.path.isfile(os.path.join(THIS_PATH, filename)):
             cfg.read([filename])
@@ -192,6 +193,29 @@ def write_config(section, option, filename='', value=None):
         cfg.write(cfg_data)   
     else:
         pass
+    
+def write_config2(section, option, filename='', value=None):
+    #cfg = ConfigParser.RawConfigParser(allow_no_value=True, dict_type=MultiOrderedDict) 
+    if not value == None:
+        if os.path.isfile(os.path.join(THIS_PATH, filename)):
+            cfg.read([filename])
+        else:
+            filename = get_config_file()
+            cfg.read([filename])
+        try:
+            cfg.get(section, option)
+            cfg.set(section, option, value)
+        except ConfigParser.NoSectionError:
+            #cfg.add_section(section)
+            #cfg.set(section, option, value)
+            return "\tNo Section Name: '%s'" %(section)
+        except ConfigParser.NoOptionError:
+            return "\tNo Option Name: '%s'" %(option)
+        cfg_data = open(filename,'wb')
+        cfg.write(cfg_data)   
+        return ''
+    else:
+        return "No Value set !"
     
 def get_config(section, option, filename='', value=None):
     try:
@@ -277,24 +301,25 @@ def get_config6(section, option, filename='', value=None):
 def write_all_config(filename=''):
     pass
 
-def read_all_config(filename='', section=None):
+def read_all_config(filename='', section=''):
     filecfg = get_config_file(filename)
     cfg.read(filecfg)    
     data = {}
     dbank = []
-    if section !=  None:
+    if len(section) != 0:
         for x in cfg.options(section):
             d = cfg.get(section, x)
             data.update({x:d})
         dbank.append([section,data])        
     else:    
+        section = list(section)
         for i in cfg.sections():
             section.append(i)
             for x in cfg.options(i):
                 d = cfg.get(i, x)
                 data.update({x:d})
             dbank.append([i,data])
-    print "dbank =",  dbank
+    return dbank
     
 def read_all_section(filename='', section='server'):
     filecfg = get_config_file(filename)
