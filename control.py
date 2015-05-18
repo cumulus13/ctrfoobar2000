@@ -38,6 +38,14 @@ class control(object):
             self.check_connection()
             print "\t Error communication with Foobar2000 [COM|HTTP] Server !"
 
+    def playTrack(self, track):
+        #print "TRACK 0 =", track
+        try:
+            return self.foobar2000.playTrack(track)
+        except:
+            self.check_connection()
+            print "\t This only use with with Foobar2000 HTTP Server Controller Plugin !"
+
     def stop(self):
         try:
             return self.foobar2000.stop()
@@ -197,6 +205,18 @@ class control(object):
             print "\n"          
         return self.foobar2000.check_connection()
 
+    def playlist(self):
+        try:
+            pl = self.foobar2000.playlist()
+            for i in pl:
+                print str(pl.index(i)) + ".", i
+            q = raw_input("\t Do you want to play Track No: ")
+            if q != None or q != '':
+                self.playTrack(q)
+        except:
+            self.check_connection()
+            print "\t This only use with Foobar2000 HTTP Server Controller Plugin !"
+
     def usage(self, print_help=None):
         print "\n"
         parser = argparse.ArgumentParser()
@@ -253,6 +273,7 @@ class control(object):
 
         args_http = subparser.add_parser('http', help='Type Controller "http"')
         args_http.add_argument('-p', '--play', help='Play Playback', action='store_true')
+        args_http.add_argument('-t', '--play-track', help="Play Playback Track No", action="store")
         args_http.add_argument('-s', '--stop', help='Stop Playback', action='store_true')
         args_http.add_argument('-P', '--pause', help='Pause Playback', action='store_true')
         args_http.add_argument('-n', '--next', help='Next Play', action='store_true')
@@ -316,6 +337,8 @@ class control(object):
                 elif options.play:
                     #print "option PLAY"
                     self.play()
+                elif options.play_track:
+                    self.playTrack(options.play_track)
                 elif options.stop:
                     self.stop()
                 elif options.pause:
@@ -333,7 +356,7 @@ class control(object):
                 elif options.info:
                     self.info()    
                 elif options.list:
-                    print "NOT YEST !!!"  
+                    self.playlist() 
                 elif options.addfolder:
                     self.addFolder(options.addfolder)
                 elif options.addfolderplay:

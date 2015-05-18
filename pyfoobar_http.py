@@ -39,6 +39,13 @@ class urlhandle:
             return self.module.get(url)
         else:
             return self.module.urlopen(url)
+            
+    def playTrack(self, url):
+        #print "url =", url
+        if self.handle == 'requests':
+            return self.module.get(url)
+        else:
+            return self.module.urlopen(url)
 
     def stop(self, url):
         if self.handle == 'requests':
@@ -144,6 +151,12 @@ class urlhandle:
             return self.module.get(url)
         else:
             return self.module.urlopen(url)
+            
+    def playlist(self, url):
+        if self.handle == 'requests':
+            return self.module.get(url)
+        else:
+            return self.module.urlopen(url)
 
 try:
     import requests
@@ -192,6 +205,13 @@ class foobar(object):
         data = {'cmd':'Start'}
         url = self.setURL(data)
         return c_handle.play(url)
+        
+    def playTrack(self, track):
+		#print "TRACK =", track
+		data = {'cmd':'Start', 'param1':str(track)}
+		url = self.setURL(data)
+		#print "url =", url
+		return c_handle.play(url)
 
     def stop(self):
         data = {'cmd':'Stop'}
@@ -257,6 +277,19 @@ class foobar(object):
 
     def info(self):
         return None
+        
+    def playlist(self):
+		from bs4 import BeautifulSoup as bs
+		data1 = c_handle.playlist(self.url).text
+		soup1 = bs(data1)
+		data2 = soup1.find(id='pl')
+		#data3 = data2.find_all('tr')
+		#print "data3 =", data3
+		data4 = []
+		for i in data2.find_all('tr'):
+			data4.append(i.td.contents)
+			#print "i.td.contents =",i.td.contents
+		return data4
 
     def clearPlaylist(self):
         data = {'cmd':'EmptyPlaylist'}
