@@ -4,6 +4,7 @@ import argparse
 import sys
 import os
 import subprocess
+import urlparse
 
 class control(object):
     def __init__(self, host=None, port=None):
@@ -94,6 +95,13 @@ class control(object):
         except:
             self.check_connection()
             print "\t Error communication with Foobar2000 [COM|HTTP] Server !"
+            
+    def browser(self):
+            try:
+                return self.foobar2000.browser()
+            except:
+                self.check_connection()
+                print "\t This only use with with Foobar2000 HTTP Server Controller Plugin !"
 
     def info(self):
         try:
@@ -144,15 +152,23 @@ class control(object):
 
     def clear(self):
         self.kill()
-        if os.path.isdir(os.path.join(self.prog_path, 'foobar2000')):
-            os.rmdir(os.path.join(self.prog_path, 'foobar2000'))
+        if os.path.isdir(os.path.join(os.getenv('ProgramFiles(x86)'), 'foobar2000')):
+            os.rmdir(os.path.join(os.getenv('ProgramFiles(x86)'), 'foobar2000'))
+        elif os.path.isdir(os.path.join(os.getenv('ProgramFiles'), 'foobar2000')):
+            os.rmdir(os.path.join(os.getenv('ProgramFiles'), 'foobar2000'))
         if os.path.isdir(os.path.join(os.getenv('appdata'), 'foobar2000')):
             os.rmdir(os.path.join(os.getenv('appdata'), 'foobar2000'))
 
     def open(self):
         import module002a
+        data = ''
         del(sys.argv[1])
-        data = ['c:\\Program Files\\foobar2000\\foobar2000.exe']
+        if os.getenv('ProgramFiles(x86)') != None:
+            if os.path.isdir(os.path.join(os.getenv('ProgramFiles(x86)'), 'foobar2000')):
+                data = [os.getenv('ProgramFiles(x86)') + '\\foobar2000.exe']
+        else:
+            if os.path.isdir(os.path.join(os.getenv('ProgramFiles'), 'foobar2000')):
+                data = [os.getenv('ProgramFiles') + '\\foobar2000\\foobar2000.exe']
         module002a.main(data)
 
     def config(self, num_type, verbosity=None):
@@ -185,7 +201,7 @@ class control(object):
             print "\n"
             q = raw_input("Please Select your Type [use option -t for direct option]: ")
             if q == '':
-                usage(True)
+                self.usage(True)
             else:
                 q = int(q)
                 self.config(q, verbosity)
@@ -216,6 +232,52 @@ class control(object):
         except:
             self.check_connection()
             print "\t This only use with Foobar2000 HTTP Server Controller Plugin !"
+            
+    def browser(self, num_suffix=None, direct_path=None, url=None):
+        try:
+            #data_url, data4, url
+            try:
+                www = self.foobar2000.browser(num_suffix, direct_path, url)
+            except:
+                print "\n"
+                print "\t Error Communication with server !"
+                return SystemExit
+                
+            print "www              =", www
+            print "www[0] / dataurl =", www[0]
+            print "www[1] / data4   =", www[1]
+            print "www[2] / url     =", www[2]
+            for i in www[1]:
+                print i
+            listdir = www[0].values()
+            #print "listdir =", listdir
+            #print "len(listdir) =", len(listdir)
+            print "\n"
+            q = raw_input("\t GO To [up|back|(Folder/Path Name)]: ")
+            if str(q).lower() == 'up':
+                for i in range(1, len(listdir)):
+                    if len(str(listdir[-i]).strip()) != 0:
+                        return self.browser(i)
+                        
+                return self.browser(0)
+            elif str(q).isdigit():
+                print "str(q).isdigit()"
+                return self.browser(int(q))
+            elif q == None:
+                q = ''
+            else:
+                for i in range(1, len(listdir)):
+                    if len(str(listdir[-i]).strip()) != 0:
+                        r_url = urlparse.urlparse(www[2])
+                        url = r_url.scheme + "://" + r_url.netloc
+                        url1 = str(listdir[-i]).split('&param2=')[0]
+                        url = url + "/" + url1 + direct_path
+                        return self.browser(direct_path=q, url=url)
+        except:
+            print "ERROR:",traceback.format_exc()
+            self.check_connection()
+            print "\t This only use with Foobar2000 HTTP Server Controller Plugin !"        
+                
 
     def usage(self, print_help=None):
         print "\n"
@@ -286,6 +348,7 @@ class control(object):
         args_http.add_argument('-F', '--addfolderplay', help='Add Remote Folder Queue & Play it [HTTP]', action='store')
         args_http.add_argument('-c', '--clear-playlist', help='Clear Current Playlist [HTTP]', action='store_true')
         args_http.add_argument('-l', '--list', help='List Playlist', action='store_true')
+        args_http.add_argument('-b', '--browser', help='Browser Library', action='store_true')
         args_http.add_argument('-S', '--type-controller', help='Set Type Of Controller [com,http]', action='store')
         args_http.add_argument('-x', '--store-config', help='Store Set Type Of Controller [com,http]', action='store_true')
         args_http.add_argument('-H', '--host', help="Remote Host control Address [HTTP]", action='store')
@@ -353,6 +416,8 @@ class control(object):
                     self.volume(options.volume)
                 elif options.mute:
                     self.mute()
+                elif options.browser:
+                    self.browser()                
                 elif options.info:
                     self.info()    
                 elif options.list:
@@ -388,13 +453,14 @@ class control(object):
                     if options.option:
                         print configset.write_config2(options.section, options.option[0], self.conf, options.option[1])
                     else:
+                        print "\n"
                         args_http.parse_args(['com', '-h'])                
                 elif options.kill:
                     self.kill() 
                 elif options.open:
                     self.open()
-                elif options.close:
-                    self.close()   
+                # elif options.close:
+                #     self.close()   
                 elif options.clear:
                     self.clear()
                 elif options.play:
@@ -420,6 +486,7 @@ class control(object):
                 elif options.read_config:
                     self.readConfig()                
                 else:
+                    print "\n"
                     args_com.parse_args(['http', '-h'])
             else:
                 print "\n"

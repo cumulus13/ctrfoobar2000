@@ -1,6 +1,8 @@
 import configset
 import os
 import time
+from bs4 import BeautifulSoup as bs
+import urlparse
 
 CONF_FILE = os.path.join(os.path.dirname(__file__), 'pyfoobar.ini')
 
@@ -39,7 +41,7 @@ class urlhandle:
             return self.module.get(url)
         else:
             return self.module.urlopen(url)
-            
+
     def playTrack(self, url):
         #print "url =", url
         if self.handle == 'requests':
@@ -151,12 +153,19 @@ class urlhandle:
             return self.module.get(url)
         else:
             return self.module.urlopen(url)
-            
+
     def playlist(self, url):
         if self.handle == 'requests':
             return self.module.get(url)
         else:
             return self.module.urlopen(url)
+
+    def browser(self, url):
+        if self.handle == 'requests':
+            #print "URL =", url
+            return self.module.get(url)
+        else:
+            return self.module.urlopen(url)	
 
 try:
     import requests
@@ -191,7 +200,7 @@ class foobar(object):
 
     def isPlaying(self):
         return None
-    
+
     def check_connection(self):
         import urlparse
         parse = urlparse.urlparse(self.url)
@@ -205,13 +214,13 @@ class foobar(object):
         data = {'cmd':'Start'}
         url = self.setURL(data)
         return c_handle.play(url)
-        
+
     def playTrack(self, track):
-		#print "TRACK =", track
-		data = {'cmd':'Start', 'param1':str(track)}
-		url = self.setURL(data)
-		#print "url =", url
-		return c_handle.play(url)
+        #print "TRACK =", track
+        data = {'cmd':'Start', 'param1':str(track)}
+        url = self.setURL(data)
+        #print "url =", url
+        return c_handle.play(url)
 
     def stop(self):
         data = {'cmd':'Stop'}
@@ -240,6 +249,63 @@ class foobar(object):
         data = {'cmd':'StartRandom'}
         url = self.setURL(data)
         return c_handle.play(url)
+
+    def browser_pre(self, url=None, direct_path=None):
+        data_urlx = {0:'',1:'', 2:'', 3:''}
+
+        data = {'cmd':'Browse'}
+
+        if url == None:
+            print "def:browser_pre --> url == None"
+            url = self.setURL(data)
+        if direct_path != None:
+            print "def:browser_pre --> str(url) =", url
+            url_edit1 = str(url).split("&param2")[0]
+            print "def:browser_pre --> url_edit1 =", url_edit1
+            url = url_edit1 + direct_path
+            print "def:browser_pre --> url =", url
+
+        data1 = c_handle.browser(url).text
+        soup1 = bs(data1)
+        data2 = soup1.find("table")
+        data3 = soup1.find('div', {'class':'dir'})
+        data5 = data3.find_all('a')
+        data4 = []
+        for i in data2.find_all('a'):
+            data4.append(i.contents)
+        for a in data5:
+            b = a.get('href')
+            data_urlx.update({data5.index(a):b})
+            
+
+        #print "url X           1 =", url
+        #print "list_url_suffix 1 =", data_urlx
+        #print "list_file/dir   1 =", data4
+        #print "-"*120
+        return data_urlx, data4, url
+
+    def browser(self, num_suffix=None, direct_path=None, url=None):
+        data_urlx = self.browser_pre()[0]
+        if num_suffix != None:
+            print "def:browser --> num_suffix ! = None"
+            r_url = urlparse.urlparse(self.url)
+            print "def:browser --> num_suffix ! --> r_url =", r_url
+            url = r_url.scheme + "://" + r_url.netloc + data_urlx.get(num_suffix)
+            print "def:browser --> num_suffix ! --> url =", url
+            data_urlx = self.browser_pre(url)
+            print "url X           2 =", data_urlx[2]
+            print "list_url_suffix 2 =", data_urlx[1]
+            print "list_file/dir   2 =", data_urlx[2]
+            print "+"*120
+            return self.browser_pre(url)
+
+        if direct_path != None:
+            print "def:browser --> direct_path ! = None"
+            data_urlx = self.browser_pre(url, direct_path=direct_path)
+            return self.browser_pre(url, direct_path=direct_path)
+        
+        return self.browser_pre()
+
 
     def seekPosition(self):
         return None
@@ -277,19 +343,18 @@ class foobar(object):
 
     def info(self):
         return None
-        
+
     def playlist(self):
-		from bs4 import BeautifulSoup as bs
-		data1 = c_handle.playlist(self.url).text
-		soup1 = bs(data1)
-		data2 = soup1.find(id='pl')
-		#data3 = data2.find_all('tr')
-		#print "data3 =", data3
-		data4 = []
-		for i in data2.find_all('tr'):
-			data4.append(i.td.contents)
-			#print "i.td.contents =",i.td.contents
-		return data4
+        data1 = c_handle.playlist(self.url).text
+        soup1 = bs(data1)
+        data2 = soup1.find(id='pl')
+        #data3 = data2.find_all('tr')
+        #print "data3 =", data3
+        data4 = []
+        for i in data2.find_all('tr'):
+            data4.append(i.td.contents)
+            #print "i.td.contents =",i.td.contents
+        return data4
 
     def clearPlaylist(self):
         data = {'cmd':'EmptyPlaylist'}
@@ -317,3 +382,6 @@ class foobar(object):
         self.play()
         return self.play()
 
+if __name__ == "__main__":
+    c = foobar()
+    c.browser(1)
