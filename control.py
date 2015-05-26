@@ -18,20 +18,30 @@ class control(object):
         self.error = ''
         self.nircmd = r"c:\EXE\nircmd.exe"
         self.ctype = configset.read_config('CONTROL', 'type')
+        self.foobar2000 = ''
+        # if self.ctype == 'com':
+        #     import pyfoobar
+        #     self.foobar2000 = pyfoobar.foobar()
+        # elif self.ctype == 'http':
+        #     import pyfoobar_http
+        #     self.foobar2000 = pyfoobar_http.foobar(self.host, self.port)
+        if not os.getenv('PROCESSOR_ARCHITECTURE') == 'x86':
+            self.prog_path = os.getenv('ProgramFiles(x86)')
+        else:
+            self.prog_path = os.getenv('ProgramFiles')       
+
+    def re_init(self):
         if self.ctype == 'com':
             import pyfoobar
             self.foobar2000 = pyfoobar.foobar()
         elif self.ctype == 'http':
             import pyfoobar_http
             self.foobar2000 = pyfoobar_http.foobar(self.host, self.port)
-        if not os.getenv('PROCESSOR_ARCHITECTURE') == 'x86':
-            self.prog_path = os.getenv('ProgramFiles(x86)')
-        else:
-            self.prog_path = os.getenv('ProgramFiles')       
 
     def play(self):
         #print "self.ctype =", self.ctype
         #print "self.foobar2000 =", self.foobar2000
+        self.re_init()
         try:
             return self.foobar2000.play()
         except:
@@ -40,6 +50,7 @@ class control(object):
             print "\t Error communication with Foobar2000 [COM|HTTP] Server !"
 
     def playTrack(self, track):
+        self.re_init()
         #print "TRACK 0 =", track
         try:
             return self.foobar2000.playTrack(track)
@@ -48,6 +59,7 @@ class control(object):
             print "\t This only use with with Foobar2000 HTTP Server Controller Plugin !"
 
     def stop(self):
+        self.re_init()
         try:
             return self.foobar2000.stop()
         except:
@@ -55,6 +67,7 @@ class control(object):
             print "\t Error communication with Foobar2000 [COM|HTTP] Server !"
 
     def pause(self):
+        self.re_init()
         try:
             return self.foobar2000.pauseplay()
         except:
@@ -62,6 +75,7 @@ class control(object):
             print "\t Error communication with Foobar2000 [COM|HTTP] Server !"
 
     def previous(self):
+        self.re_init()
         try:
             return self.foobar2000.previous()
         except:
@@ -69,6 +83,7 @@ class control(object):
             print "\t Error communication with Foobar2000 [COM|HTTP] Server !"
 
     def next(self):
+        self.re_init()
         try:
             return self.foobar2000.next()
         except:
@@ -76,6 +91,7 @@ class control(object):
             print "\t Error communication with Foobar2000 [COM|HTTP] Server !"
 
     def random(self):
+        self.re_init()
         try:
             return self.foobar2000.playRandom()
         except:
@@ -83,6 +99,7 @@ class control(object):
             print "\t Error communication with Foobar2000 [COM|HTTP] Server !"
 
     def volume(self, vol):
+        self.re_init()
         try:
             return self.foobar2000.setVolumeLevel(vol)
         except:
@@ -90,20 +107,23 @@ class control(object):
             print "\t Error communication with Foobar2000 [COM|HTTP] Server !"
 
     def mute(self):
+        self.re_init()
         try:
             return self.foobar2000.mute()
         except:
             self.check_connection()
             print "\t Error communication with Foobar2000 [COM|HTTP] Server !"
             
-    def browser(self):
-            try:
-                return self.foobar2000.browser()
-            except:
-                self.check_connection()
-                print "\t This only use with with Foobar2000 HTTP Server Controller Plugin !"
+    # def browser(self):
+    #     self.re_init()
+    #     try:
+    #         return self.foobar2000.browser()
+    #     except:
+    #         self.check_connection()
+    #         print "\t This only use with with Foobar2000 HTTP Server Controller Plugin !"
 
     def info(self):
+        self.re_init()
         try:
             print "\n"
             print "\t Track    :", self.foobar2000.getCurrentTrack()
@@ -124,12 +144,15 @@ class control(object):
             print "\t Error communication with Foobar2000 [COM|HTTP] Server !"
 
     def clearPlaylist(self):
+        self.re_init()
         return self.foobar2000.clearPlaylist()
 
     def addFolder(self, folder):
+        self.re_init()
         return self.foobar2000.addFolder(folder)
 
     def playFolder(self, folder):
+        self.re_init()
         return self.foobar2000.playFolder(folder)
 
     def kill(self, pid=None):
@@ -216,12 +239,14 @@ class control(object):
         print "\n"
 
     def check_connection(self):
+        self.re_init()
         if self.foobar2000.check_connection() != True:
             print "\t Please re-config config file for server and host or use option -H and option -O [HTTP]"
             print "\n"          
         return self.foobar2000.check_connection()
 
     def playlist(self):
+        self.re_init()
         try:
             pl = self.foobar2000.playlist()
             for i in pl:
@@ -234,6 +259,7 @@ class control(object):
             print "\t This only use with Foobar2000 HTTP Server Controller Plugin !"
             
     def browser(self, num_suffix=None, direct_path=None, url=None):
+        self.re_init()
         try:
             #data_url, data4, url
             try:
