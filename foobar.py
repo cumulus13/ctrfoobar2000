@@ -1,4 +1,6 @@
 import os, sys
+if os.path.isdir(r'c:/pyx'):
+	sys.path.insert(0, r'c:\\pyx')
 if sys.platform == 'win32':
 	import module002a
 if not os.path.isdir(r'e:\PROJECT_EDIT\git'):

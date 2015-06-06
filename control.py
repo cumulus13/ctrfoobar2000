@@ -31,6 +31,7 @@ class control(object):
             self.prog_path = os.getenv('ProgramFiles')       
 
     def re_init(self):
+        #print "self.ctype =", self.ctype
         if self.ctype == 'com':
             import pyfoobar
             self.foobar2000 = pyfoobar.foobar()
@@ -123,7 +124,9 @@ class control(object):
     #         print "\t This only use with with Foobar2000 HTTP Server Controller Plugin !"
 
     def info(self):
+        print "Get Info"
         self.re_init()
+        #print help(self.foobar2000)
         try:
             print "\n"
             print "\t Track    :", self.foobar2000.getCurrentTrack()
@@ -140,6 +143,7 @@ class control(object):
                 print "\t State    : Unknown"
 
         except:
+            traceback.format_exc_syslog_growl(True)
             self.check_connection()
             print "\t Error communication with Foobar2000 [COM|HTTP] Server !"
 
@@ -304,6 +308,41 @@ class control(object):
             self.check_connection()
             print "\t This only use with Foobar2000 HTTP Server Controller Plugin !"        
                 
+    def format_alias_dir(self, path, alias, level=1):
+        level = int(level)
+        #print "LEVEL                    =", level
+        #print "PATH 1                   =", path
+        path  = str(path).split("\\")
+        #print "PATH 2                   =", path
+        path_join = "\\".join(path[level:])
+        #print "PATH_JOIN                =", path_join
+        #print "ALIAS                    =", alias
+        if ":" in alias:
+            alias = str(alias).split("\\")
+            if "\\" in alias[-1]:
+                alias_join = "\\".join(alias)
+                #print "ALIAS JOIN 1             =", alias_join
+            else:
+                alias_join = "\\".join(alias) + '\\'
+                #print "ALIAS JOIN 2             =", alias_join
+        else:
+            alias = alias[0] + ":" + alias[1:]
+            alias = str(alias).split("\\")
+            if "\\" in alias[-1]:
+                alias_join = "\\".join(alias)
+                #print "ALIAS JOIN 3             =", alias_join
+            else:
+                alias_join = "\\".join(alias) + '\\'
+                #print "ALIAS JOIN 4             =", alias_join            
+                
+        result = os.path.join(alias_join, path_join)
+        #print "RESULT                   =", result
+        return result
+        #if os.path.isdir(result):
+            #return result
+        #else:
+            #print "ALIAS is NOT a DIRECTORY"
+            #return False
 
     def usage(self, print_help=None):
         print "\n"
@@ -333,7 +372,8 @@ class control(object):
         parser.add_argument('-g', '--read-config', help="Read config file", action="store_true")
         parser.add_argument('-?', '--usage', help='Print All Help', action='store_true')
         parser.add_argument('-T', '--section', help="Set Section Config", action="store")
-        parser.add_argument('-E', '--option', help="Set Option Config", action="store", nargs=2)        
+        parser.add_argument('-E', '--option', help="Set Option Config", action="store", nargs=2)   
+        parser.add_argument('-a', '--dir-alias', help="Root of Directory Alias On Server [HTTP]", action="store")
 
         subparser = parser.add_subparsers(title='TYPE CONTROLLER', dest='TYPE')
 
@@ -382,7 +422,9 @@ class control(object):
         args_http.add_argument('-?', '--usage', help='Print All Help', action='store_true')
         args_http.add_argument('-g', '--read-config', help="Read config file", action="store_true")
         args_http.add_argument('-T', '--section', help="Set Section Config", action="store")
-        args_http.add_argument('-E', '--option', help="Set Option Config", action="store", nargs=2)        
+        args_http.add_argument('-E', '--option', help="Set Option Config", action="store", nargs=2)
+        args_http.add_argument('-a', '--dir-alias', help="Root of Directory Alias On Server", action="store")
+        args_http.add_argument('-L', '--level-alias', help="Level Root of Directory Alias On Server", action="store", default=1)
 
         if len(sys.argv) == 1:
             if self.ctype == 'http':
@@ -409,6 +451,12 @@ class control(object):
                 if options.type_controller:
                     if options.type_controller == 'com' or options.type_controller == 'http':
                         self.ctype = options.type_controller
+                        if options.store_config:
+                            configset.write_config('CONTROL', 'type', self.conf, options.type_controller)
+                            if options.host:
+                                configset.write_config('HTTP', 'server', self.conf, options.host)
+                            if options.host:
+                                configset.write_config('HTTP', 'port', self.conf, options.port)                         
                 elif options.store_config:
                     if options.type_controller:
                         configset.write_config('CONTROL', 'type', self.conf, options.type_controller)
@@ -451,7 +499,20 @@ class control(object):
                 elif options.addfolder:
                     self.addFolder(options.addfolder)
                 elif options.addfolderplay:
-                    self.playFolder(options.addfolderplay)
+                    if options.dir_alias:
+                        folder = self.format_alias_dir(options.addfolderplay, options.dir_alias, options.level_alias)
+                        #print "FOLDER =", folder
+                        #if os.path.isdir(folder):
+                        self.playFolder(folder)
+                        #else:
+                            #print "\n"
+                            #print "\t Invalid Alias or Folder not Exist !\n"
+                            #args_http.parse_args(['http', '-h'])                         
+                    else:
+                        print "\n"
+                        print "\t Please use option -a or and -L\n"
+                        args_http.parse_args(['http', '-h'])
+                    #self.playFolder(options.addfolderplay)
                 elif options.usage:
                     parser.print_help()
                 elif options.read_config:
