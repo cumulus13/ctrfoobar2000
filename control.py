@@ -440,7 +440,7 @@ class control(object):
                 parser.print_help()
         elif print_help:
             parser.print_help()
-        else:
+        else:        
             if self.ctype == 'http':
                 options = args_http.parse_args()
                 #self.__init__(options.host, options.port)
@@ -455,14 +455,14 @@ class control(object):
                             configset.write_config('CONTROL', 'type', self.conf, options.type_controller)
                             if options.host:
                                 configset.write_config('HTTP', 'server', self.conf, options.host)
-                            if options.host:
+                            if options.port:
                                 configset.write_config('HTTP', 'port', self.conf, options.port)                         
                 elif options.store_config:
                     if options.type_controller:
                         configset.write_config('CONTROL', 'type', self.conf, options.type_controller)
                     if options.host:
                         configset.write_config('HTTP', 'server', self.conf, options.host)
-                    if options.host:
+                    if options.port:
                         configset.write_config('HTTP', 'port', self.conf, options.port)     
                 elif options.section:
                     if options.option:
@@ -527,6 +527,8 @@ class control(object):
                 elif options.type_controller:
                     if options.type_controller == 'com' or options.type_controller == 'http':
                         self.ctype = options.type_controller
+                        if options.store_config:
+                            configset.write_config('CONTROL', 'type', self.conf, options.type_controller)
                 elif options.store_config:
                     if options.type_controller:
                         configset.write_config('CONTROL', 'type', self.conf, options.type_controller)
