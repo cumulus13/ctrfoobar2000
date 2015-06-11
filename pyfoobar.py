@@ -25,7 +25,7 @@ class foobar(object):
         if self.isPaused():
             playback.Pause()
         else:
-            playback.Start()
+            playback.Start(None)
 
     def stop(self):
         playback.Stop()

@@ -33,20 +33,20 @@ class control(object):
     def re_init(self):
         #print "self.ctype =", self.ctype
         if self.ctype == 'com':
+            #print "COM SET"
             import pyfoobar
             self.foobar2000 = pyfoobar.foobar()
         elif self.ctype == 'http':
+            #print "HTTP SET"
             import pyfoobar_http
             self.foobar2000 = pyfoobar_http.foobar(self.host, self.port)
 
     def play(self):
-        #print "self.ctype =", self.ctype
-        #print "self.foobar2000 =", self.foobar2000
         self.re_init()
         try:
             return self.foobar2000.play()
         except:
-            #print traceback.format_exc_syslog_growl(True)
+            print traceback.format_exc_syslog_growl(True)
             self.check_connection()
             print "\t Error communication with Foobar2000 [COM|HTTP] Server !"
 
