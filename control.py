@@ -5,6 +5,7 @@ import sys
 import os
 import subprocess
 import urlparse
+import re
 
 class control(object):
     def __init__(self, host=None, port=None):
@@ -312,10 +313,17 @@ class control(object):
         level = int(level)
         #print "LEVEL                    =", level
         #print "PATH 1                   =", path
+        if '/' in path or '/' == path[-1]:
+	    path = str(path).replace('/', '\\')
+	if len(re.findall('[A-Z]:|[a-z]:', path)) == 0:
+            if ":" in alias:
+    		path = alias + '\\' + path
+    	    else:
+    		path = alias + ":" + '\\' + path
         path  = str(path).split("\\")
         #print "PATH 2                   =", path
         path_join = "\\".join(path[level:])
-        #print "PATH_JOIN                =", path_join
+        print "PATH_JOIN                =", path_join
         #print "ALIAS                    =", alias
         if ":" in alias:
             alias = str(alias).split("\\")
