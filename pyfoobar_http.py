@@ -48,6 +48,12 @@ class urlhandle:
             return self.module.get(url)
         else:
             return self.module.urlopen(url)
+        
+    def deltrack(self, url):
+        if self.handle == 'requests':
+            return self.module.get(url)
+        else:
+            return self.module.urlopen(url)    
 
     def stop(self, url):
         if self.handle == 'requests':
@@ -221,6 +227,17 @@ class foobar(object):
         url = self.setURL(data)
         #print "url =", url
         return c_handle.play(url)
+    
+    def deltrack(self, track):
+        if isinstance(track, list):
+            for i in track:
+                data = {'cmd':'Del', 'param1':str(i)}
+                url = self.setURL(data)
+                return c_handle.deltrack(url)                
+        else:
+            data = {'cmd':'Del', 'param1':str(track)}
+            url = self.setURL(data)
+            return c_handle.deltrack(url)
 
     def stop(self):
         data = {'cmd':'Stop'}

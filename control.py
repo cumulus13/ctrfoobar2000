@@ -115,7 +115,7 @@ class control(object):
         except:
             self.check_connection()
             print "\t Error communication with Foobar2000 [COM|HTTP] Server !"
-            
+
     # def browser(self):
     #     self.re_init()
     #     try:
@@ -151,6 +151,10 @@ class control(object):
     def clearPlaylist(self):
         self.re_init()
         return self.foobar2000.clearPlaylist()
+    
+    def deltrack(self, track):
+        self.re_init()
+        return self.foobar2000.deltrack(track)
 
     def addFolder(self, folder):
         self.re_init()
@@ -253,16 +257,28 @@ class control(object):
     def playlist(self):
         self.re_init()
         try:
-            pl = self.foobar2000.playlist()
-            for i in pl:
-                print str(pl.index(i)) + ".", i
+            pl = self.foobar2000.playlist()[0:-1]
+            if len(pl) > 9:
+                for i in range(0, 9):
+                    print str(i + 1) + '.  ' + unicode(pl[i][0]).encode('UTF-8')
+                    print "-"*len(unicode(pl[i][0]).encode('UTF-8'))
+                for i in range(9, len(pl) - 1):
+                    print str(i + 1) +  '. ' + unicode(pl[i][0]).encode('UTF-8')
+                    print "-"*len(unicode(pl[i][0]).encode('UTF-8'))
+            else:
+                for i in pl:
+                    print str(pl.index(i) + 1) + ".", unicode(i[0]).encode('UTF-8')
+                    print "-"*len(unicode(i[0]).encode('UTF-8'))
+            print "\n"
             q = raw_input("\t Do you want to play Track No: ")
-            if q != None or q != '':
-                self.playTrack(q)
+            if q != '':
+                #print "PLAY TRACK", q
+                self.playTrack(str(int(q) - 1))
         except:
+            print "ERROR =", traceback.format_exc_syslog_growl()
             self.check_connection()
             print "\t This only use with Foobar2000 HTTP Server Controller Plugin !"
-            
+
     def browser(self, num_suffix=None, direct_path=None, url=None):
         self.re_init()
         try:
@@ -273,7 +289,7 @@ class control(object):
                 print "\n"
                 print "\t Error Communication with server !"
                 return SystemExit
-                
+
             print "www              =", www
             print "www[0] / dataurl =", www[0]
             print "www[1] / data4   =", www[1]
@@ -289,7 +305,7 @@ class control(object):
                 for i in range(1, len(listdir)):
                     if len(str(listdir[-i]).strip()) != 0:
                         return self.browser(i)
-                        
+
                 return self.browser(0)
             elif str(q).isdigit():
                 print "str(q).isdigit()"
@@ -308,22 +324,22 @@ class control(object):
             print "ERROR:",traceback.format_exc()
             self.check_connection()
             print "\t This only use with Foobar2000 HTTP Server Controller Plugin !"        
-                
+
     def format_alias_dir(self, path, alias, level=1):
         level = int(level)
         #print "LEVEL                    =", level
         #print "PATH 1                   =", path
         if '/' in path or '/' == path[-1]:
-	    path = str(path).replace('/', '\\')
-	if len(re.findall('[A-Z]:|[a-z]:', path)) == 0:
+            path = str(path).replace('/', '\\')
+        if len(re.findall('[A-Z]:|[a-z]:', path)) == 0:
             if ":" in alias:
-    		path = alias + '\\' + path
-    	    else:
-    		path = alias + ":" + '\\' + path
+                path = alias + '\\' + path
+            else:
+                path = alias + ":" + '\\' + path
         path  = str(path).split("\\")
         #print "PATH 2                   =", path
         path_join = "\\".join(path[level:])
-        print "PATH_JOIN                =", path_join
+        #print "PATH_JOIN                =", path_join
         #print "ALIAS                    =", alias
         if ":" in alias:
             alias = str(alias).split("\\")
@@ -342,7 +358,7 @@ class control(object):
             else:
                 alias_join = "\\".join(alias) + '\\'
                 #print "ALIAS JOIN 4             =", alias_join            
-                
+
         result = os.path.join(alias_join, path_join)
         #print "RESULT                   =", result
         return result
@@ -421,6 +437,7 @@ class control(object):
         args_http.add_argument('-f', '--addfolder', help='Add Remote Folder Queue [HTTP]', action='store')
         args_http.add_argument('-F', '--addfolderplay', help='Add Remote Folder Queue & Play it [HTTP]', action='store')
         args_http.add_argument('-c', '--clear-playlist', help='Clear Current Playlist [HTTP]', action='store_true')
+        args_http.add_argument('-d', '--del-track', help='Delete Playlist [HTTP], example: foobar -d 1 2 3', action='store', nargs='*')
         args_http.add_argument('-l', '--list', help='List Playlist', action='store_true')
         args_http.add_argument('-b', '--browser', help='Browser Library', action='store_true')
         args_http.add_argument('-S', '--type-controller', help='Set Type Of Controller [com,http]', action='store')
@@ -525,6 +542,8 @@ class control(object):
                     parser.print_help()
                 elif options.read_config:
                     self.readConfig()
+                elif options.del_track:
+                    self.deltrack(options.del_track)
                 else:
                     args_http.parse_args(['http', '-h'])
 
