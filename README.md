@@ -1,6 +1,6 @@
 Description
 ----------------------
-Control Foobar2000 by python + Command line
+Control Foobar2000 with python + Command line
 
 Usage
 -----------
