@@ -16,7 +16,7 @@ __build__ = '2.7'
 cfg = ConfigParser.RawConfigParser(allow_no_value=True)
 cfg.optionxform = str
 THIS_PATH = os.path.dirname(__file__)
-configname = 'conf.ini'
+configname = 'pyfoobar.ini'
 
 class MultiOrderedDict(OrderedDict):
     def __setitem__(self, key, value):
@@ -26,7 +26,7 @@ class MultiOrderedDict(OrderedDict):
             super(OrderedDict, self).__setitem__(key, value)
 
 def get_config_file(filename='', verbosity=None):
-    configname = 'conf.ini'
+    configname = 'pyfoobar.ini'
     if os.path.isfile(os.path.join(os.getcwd(), filename)):
         #print "FILENAME ZZZ=", f
         configname = os.path.join(os.getcwd(), filename)
