@@ -1,5 +1,6 @@
 import configset
 import os
+import sys
 import time
 from bs4 import BeautifulSoup as bs
 import urlparse
@@ -230,10 +231,13 @@ class foobar(object):
     
     def deltrack(self, track):
         if isinstance(track, list):
+            sys.stdout.write("del track = ")
             for i in track:
-                data = {'cmd':'Del', 'param1':str(i)}
+                data = {'cmd':'Del', 'param1':str(int(i) - 1)}
                 url = self.setURL(data)
-                return c_handle.deltrack(url)                
+                sys.stdout.write(str(int(i)) + ", ")
+                # return c_handle.deltrack(url)                
+                c_handle.deltrack(url)
         else:
             data = {'cmd':'Del', 'param1':str(track)}
             url = self.setURL(data)

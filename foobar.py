@@ -1,12 +1,14 @@
+#!/usr/bin/python
+
 import os, sys
 if os.path.isdir(r'c:/pyx'):
 	sys.path.insert(0, r'c:\\pyx')
 if sys.platform == 'win32':
 	import module002a
-if not os.path.isdir(r'e:\PROJECT_EDIT\git'):
+if not os.path.isdir(r'f:\PROJECTS'):
 	raise SystemError('Please re-Set module ctrlfoobar2000 !')
-sys.path.insert(0, 'e:\PROJECT_EDIT\git')
-os.chdir('e:\PROJECT_EDIT\git\ctrfoobar2000')
+sys.path.insert(0, 'f:\PROJECTS')
+os.chdir('f:\PROJECTS\ctrfoobar2000')
 from ctrfoobar2000 import control
 foobar = control.control()
 
