@@ -1,4 +1,5 @@
 import configset
+import re
 import os
 import sys
 import time
@@ -184,6 +185,7 @@ except:
 class foobar(object):
     def __init__(self, host=None, port=None):
         super(foobar, self)
+        self.THIS_PATH = ''
         self.host = host
         self.port = port
         if self.host == None:
@@ -363,7 +365,49 @@ class foobar(object):
         return None
 
     def info(self):
-        return None
+        data1 = c_handle.info(self.url).text
+        soup1 = bs(data1)
+        data2 = soup1.find(id = 'track_title')
+        data3 = unicode(data2.text).encode('UTF-8')
+        if "//" in data3:
+            #print "AAA"
+            data4 = data3.split("//")
+            #print "data 4=", data4
+            artist = str(data4[-1]).strip()
+            data5 = re.split("\[|\]", data4[0])
+            albumartist = data5[0]     
+            data6 = re.split("CD", data5[1])
+            #print "data6 =", data6
+            album = data6[0]
+            track = data6[1][3:]
+            cd = "CD" + data6[1][0]
+            song = data5[2]
+        else:
+            #print "BBB"
+            #print "data3 =", data3
+            data4 = re.split("\[|\]", data3)
+            #print "data4 =", data4
+            data5 = data4[1].split("CD")
+            #print "data5 =", data5
+            
+            artist = data4[0]
+            #print "artist 2 =", artist
+            album = data5[0]
+            #print "album    =", album
+            song = song = " ".join(data4[2:])
+            track = data5[1][-2:]
+            #print "track =", track
+            albumartist = data4[0]
+            cd = "CD" + data5[1][0]
+            #print "cd    =", cd
+
+        #print "-" * 120
+        print "Artist          :", artist #unicode(artist).encode('UTF-8')
+        print "Song            :", song.strip()
+        print "Track           :", track
+        print "CD              :", cd
+        print "Album           :", album
+        print "Album Artist    :", albumartist
 
     def playlist(self):
         data1 = c_handle.playlist(self.url).text
@@ -389,18 +433,35 @@ class foobar(object):
         url = self.setURL(data)
         return c_handle.play(url)
 
+    def playlistCount(self):
+        pl = len(self.playlist()[0:-1])
+        return pl
+
     def playFolder(self, folder):
         self.stop()
         self.clearPlaylist()
         #http://192.168.10.10:8888/default/?cmd=Browse&param1=M%3A\INSTRUMENTAL\GUITAR\Acoustic%20Rock\Vol.%2006\&param2=EnqueueDir
+        # http://127.0.0.1:8888/default/?cmd=Browse&param1=m%3A%5CWEST%5CDevil%20Shoots%20Devil%20%26%20What%20We%20Feel%20-%20Split%20%282007%29%5C
+        # http://127.0.0.1:8888/default/?cmd=Browse&param1=m%3A\WEST\Devil Shoots Devil & What We Feel - Split (2007)\&param2=EnqueueDir
         folder = str(folder).replace(':', '%3A')
+        folder = str(folder).replace(' ', '%20')
+        folder = str(folder).replace('&', '%26')
+        folder = str(folder).replace('(', '%28')
+        folder = str(folder).replace(')', '%29')
         folder = folder + "\\"
         data = {'param1':folder, 'param2':'EnqueueDir', 'cmd':'Browse'}
         url = self.setURL(data)
         c_handle.play(url)
         #self.close()
-        time.sleep(5)
-        self.play()
+        count = 0
+        while 1:
+            if self.playlistCount() == 0:
+                time.sleep(1)
+                count += 1
+                if count == 50:
+                    break
+            else:
+                break
         return self.play()
 
 if __name__ == "__main__":

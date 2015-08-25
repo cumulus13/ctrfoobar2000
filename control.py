@@ -10,6 +10,7 @@ import re
 class control(object):
     def __init__(self, host=None, port=None):
         super(control, self)
+        # self.THIS_PATH = ''
         self.host = host
         self.port = port
         self.conf = configset.get_config_file('pyfoobar.ini')
@@ -125,26 +126,28 @@ class control(object):
     #         print "\t This only use with with Foobar2000 HTTP Server Controller Plugin !"
 
     def info(self):
-        print "Get Info"
+        print "Current Playing : "
         self.re_init()
         #print help(self.foobar2000)
         try:
-            print "\n"
-            print "\t Track    :", self.foobar2000.getCurrentTrack()
-            print "\t Artist   :", self.foobar2000.getCurrentArtist()
-            print "\t Album    :", self.foobar2000.getCurrentAlbum()
-            print "\t Playlist :", self.foobar2000.currentActivePlaylist()
-            state_play = self.foobar2000.isPlaying()
-            state_pause = self.foobar2000.isPaused()
-            if state_play:
-                print "\t State    : Playing"
-            elif state_pause:
-                print "\t State    : Pause"
-            else:
-                print "\t State    : Unknown"
+            #print "\n"
+            #print "\t Track    :", self.foobar2000.getCurrentTrack()
+            #print "\t Artist   :", self.foobar2000.getCurrentArtist()
+            #print "\t Album    :", self.foobar2000.getCurrentAlbum()
+            #print "\t Playlist :", self.foobar2000.currentActivePlaylist()
+            #state_play = self.foobar2000.isPlaying()
+            #state_pause = self.foobar2000.isPaused()
+            #if state_play:
+                #print "\t State    : Playing"
+            #elif state_pause:
+                #print "\t State    : Pause"
+            #else:
+                #print "\t State    : Unknown"
+            self.foobar2000.info()
 
         except:
-            traceback.format_exc_syslog_growl(True)
+            #traceback.format_exc_syslog_growl(True)
+            print traceback.format_exc()
             self.check_connection()
             print "\t Error communication with Foobar2000 [COM|HTTP] Server !"
 
@@ -279,6 +282,11 @@ class control(object):
             self.check_connection()
             print "\t This only use with Foobar2000 HTTP Server Controller Plugin !"
 
+    def playlistCount(self):
+        self.re_init()
+        pl = self.foobar2000.playlist()[0:-1]
+        return len(pl)
+
     def browser(self, num_suffix=None, direct_path=None, url=None):
         self.re_init()
         try:
@@ -325,7 +333,18 @@ class control(object):
             self.check_connection()
             print "\t This only use with Foobar2000 HTTP Server Controller Plugin !"        
 
-    def format_alias_dir(self, path, alias, level=1):
+    def format_alias_dir(self, path, alias=None, level=0):
+        print "PATH    0=", os.path.splitdrive(path)
+        # print "PATH x   =", self.THIS_PATH
+        if path != None:
+            # if os.path.splitdrive(path)[0] == '':
+
+            path = os.path.abspath(path)
+        print "DRIVE    =", path
+        if alias == None:
+            alias = (os.path.splitdrive(os.path.abspath(path))[0])
+        print "ALIAS    =", alias
+        print "LEVEL    =", level
         level = int(level)
         #print "LEVEL                    =", level
         #print "PATH 1                   =", path
@@ -449,7 +468,7 @@ class control(object):
         args_http.add_argument('-T', '--section', help="Set Section Config", action="store")
         args_http.add_argument('-E', '--option', help="Set Option Config", action="store", nargs=2)
         args_http.add_argument('-a', '--dir-alias', help="Root of Directory Alias On Server", action="store")
-        args_http.add_argument('-L', '--level-alias', help="Level Root of Directory Alias On Server", action="store", default=1)
+        args_http.add_argument('-L', '--level-alias', help="Level Root of Directory Alias On Server", action="store", default=0)
 
         if len(sys.argv) == 1:
             if self.ctype == 'http':
@@ -524,7 +543,7 @@ class control(object):
                 elif options.addfolder:
                     self.addFolder(options.addfolder)
                 elif options.addfolderplay:
-                    if options.dir_alias:
+                    if options.addfolderplay:
                         folder = self.format_alias_dir(options.addfolderplay, options.dir_alias, options.level_alias)
                         #print "FOLDER =", folder
                         #if os.path.isdir(folder):
@@ -535,7 +554,7 @@ class control(object):
                             #args_http.parse_args(['http', '-h'])                         
                     else:
                         print "\n"
-                        print "\t Please use option -a or and -L\n"
+                        print "\t Please use -F and option -a or and -L\n"
                         args_http.parse_args(['http', '-h'])
                     #self.playFolder(options.addfolderplay)
                 elif options.usage:
