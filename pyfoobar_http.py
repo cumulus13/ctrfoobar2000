@@ -427,12 +427,16 @@ class foobar(object):
         return c_handle.play(url)
 
     def addFolder(self, folder):
-        #http://192.168.10.10:8888/default/?cmd=Browse&param1=M%3A\INSTRUMENTAL\GUITAR\Acoustic%20Rock\Vol.%2006\&param2=EnqueueDir
-        folder = str(folder).replace(':', '%%3A')
-        data = {'param1':folder, 'param2':'EnqueueDir'}
+        folder = str(folder).replace(':', '%3A')
+        folder = str(folder).replace(' ', '%20')
+        folder = str(folder).replace('&', '%26')
+        folder = str(folder).replace('(', '%28')
+        folder = str(folder).replace(')', '%29')
+        folder = folder + "\\"
+        data = {'param1':folder, 'param2':'EnqueueDir', 'cmd':'Browse'}
         url = self.setURL(data)
         return c_handle.play(url)
-
+        
     def playlistCount(self):
         pl = len(self.playlist()[0:-1])
         return pl
