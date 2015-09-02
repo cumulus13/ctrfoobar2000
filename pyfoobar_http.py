@@ -427,6 +427,7 @@ class foobar(object):
         return c_handle.play(url)
 
     def addFolder(self, folder):
+        folder = os.path.abspath(folder)
         folder = str(folder).replace(':', '%3A')
         folder = str(folder).replace(' ', '%20')
         folder = str(folder).replace('&', '%26')
@@ -442,6 +443,7 @@ class foobar(object):
         return pl
 
     def playFolder(self, folder):
+        folder = os.path.abspath(folder)
         self.stop()
         self.clearPlaylist()
         #http://192.168.10.10:8888/default/?cmd=Browse&param1=M%3A\INSTRUMENTAL\GUITAR\Acoustic%20Rock\Vol.%2006\&param2=EnqueueDir

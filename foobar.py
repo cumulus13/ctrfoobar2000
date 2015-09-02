@@ -8,7 +8,7 @@ if sys.platform == 'win32':
 if not os.path.isdir(r'f:\PROJECTS'):
     raise SystemError('Please re-Set module ctrlfoobar2000 !')
 sys.path.insert(0, 'f:\PROJECTS')
-os.chdir('f:\PROJECTS\ctrfoobar2000')
+#os.chdir('f:\PROJECTS\ctrfoobar2000')
 from ctrfoobar2000 import control
 foobar = control.control()
 
