@@ -5,33 +5,34 @@ if os.path.isdir(r'c:/pyx'):
     sys.path.insert(0, r'c:\\pyx')
 if sys.platform == 'win32':
     import module002a
-if not os.path.isdir(r'f:\PROJECTS'):
+if not os.path.isdir(r'c:\Apps'):
     raise SystemError('Please re-Set module ctrlfoobar2000 !')
-sys.path.insert(0, 'f:\PROJECTS')
+sys.path.insert(0, 'c:\Apps')
 #os.chdir('f:\PROJECTS\ctrfoobar2000')
 from ctrfoobar2000 import control
 foobar = control.control()
 
 class foobarx(control.control):
-    # def __init__(self):
-    args = ['-h', '-l', '-p', '-s', '-P', '-n', '-r', '-R', '-V', '-M', '-i', '-t', '-c', '-k', '-C']
-    ctype = foobar.ctype
-    foobar2000 = foobar.foobar2000
-    type_foobar = foobar.type_foobar
-    prog_path = foobar.prog_path
-    conf = foobar.conf
-    host = foobar.host
-    port = foobar.port
-    # super(foobarx, self)
+    def __init__(self):
+		super(foobarx, self)
+		self.args = ['-h', '-l', '-p', '-s', '-P', '-n', '-r', '-R', '-V', '-M', '-i', '-t', '-c', '-k', '-C']
+		self.ctype = foobar.ctype
+		self.foobar2000 = foobar.foobar2000
+		self.type_foobar = foobar.type_foobar
+		self.prog_path = foobar.prog_path
+		self.conf = foobar.conf
+		self.host = foobar.host
+		self.port = foobar.port
+		# super(foobarx, self)
 
-    def usagex():
+    def usagex(self):
         if len(sys.argv) == 1:
-            c.usage()
+            foobar.usage()
             # data = ['c:\\Program Files\\foobar2000\\foobar2000.exe']
             # module002a.main(data)
         elif len(sys.argv) == 2:
             if sys.platform == 'win32':
-                if sys.argv[1] not in args:
+                if sys.argv[1] not in self.args:
                     if os.path.isdir(sys.argv[1]) or os.path.isfile(sys.argv[1]):
                         data1 = [r'c:\\PROGRA~1\\foobar2000\\foobar2000.exe']
                         data2 = [r'c:\\PROGRA~2\\foobar2000\\foobar2000.exe']
@@ -43,15 +44,15 @@ class foobarx(control.control):
                         # data = ['c:\\Program Files\\foobar2000\\foobar2000.exe']
                         # module002a.main(data)
                         # c.usage()
-                        usage()
+                        foobar.usage()
                     else:
-                        usage()
+                        foobar.usage()
                 else:
-                    usage()
+                    foobar.usage()
             else:
                 print "\t your are not windows os !"
         else:
-            usage()
+            foobar.usage()
 
 if __name__ == "__main__":
     c = foobarx()
