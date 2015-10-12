@@ -26,15 +26,15 @@ class MultiOrderedDict(OrderedDict):
 cfg = ConfigParser.RawConfigParser(allow_no_value=True)
 cfg.optionxform = str
 THIS_PATH = os.path.dirname(__file__)
-configname = os.path.join(THIS_PATH, 'pyfoobar.ini')
+configname = 'pyfoobar.ini'
 
 def get_config_file(filename='', verbosity=None):
-    configname = os.path.join(THIS_PATH, 'pyfoobar.ini')
+    configname = 'pyfoobar.ini'
     if filename == '':
         if configname != '':
             filename = configname
-        else:
-            return WindowsError('No Config file found !')
+        # else:
+        #     return WindowsError('No Config file found !')
 
     if os.path.isfile(os.path.join(os.getcwd(), filename)):
         #print "FILENAME ZZZ=", f

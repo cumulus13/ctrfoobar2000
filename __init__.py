@@ -1,5 +1,5 @@
 __version__ = "1.2"
-__test__ = "0.5"
+__test__ = "0.6"
 __sdk__ = "all"
 __build__ = "2.7"
 __author__ = "licface"
