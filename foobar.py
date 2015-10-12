@@ -1,29 +1,33 @@
 #!/usr/bin/python
-
+import configset
 import os, sys
-if os.path.isdir(r'c:/pyx'):
-    sys.path.insert(0, r'c:\\pyx')
+
+MODULE_PATH = configset.read_config('MODULE','path')
+
 if sys.platform == 'win32':
+    if os.path.isdir(r'c:/pyx'):
+        sys.path.insert(0, r'c:\\pyx')    
     import module002a
-if not os.path.isdir(r'c:\Apps'):
+if not os.path.isdir(MODULE_PATH):
     raise SystemError('Please re-Set module ctrlfoobar2000 !')
-sys.path.insert(0, 'c:\Apps')
-#os.chdir('f:\PROJECTS\ctrfoobar2000')
+else:
+    sys.path.insert(0, MODULE_PATH)
+
 from ctrfoobar2000 import control
 foobar = control.control()
 
 class foobarx(control.control):
     def __init__(self):
-		super(foobarx, self)
-		self.args = ['-h', '-l', '-p', '-s', '-P', '-n', '-r', '-R', '-V', '-M', '-i', '-t', '-c', '-k', '-C']
-		self.ctype = foobar.ctype
-		self.foobar2000 = foobar.foobar2000
-		self.type_foobar = foobar.type_foobar
-		self.prog_path = foobar.prog_path
-		self.conf = foobar.conf
-		self.host = foobar.host
-		self.port = foobar.port
-		# super(foobarx, self)
+        super(foobarx, self)
+        self.args = ['-h', '-l', '-p', '-s', '-P', '-n', '-r', '-R', '-V', '-M', '-i', '-t', '-c', '-k', '-C']
+        self.ctype = foobar.ctype
+        self.foobar2000 = foobar.foobar2000
+        self.type_foobar = foobar.type_foobar
+        self.prog_path = foobar.prog_path
+        self.conf = foobar.conf
+        self.host = foobar.host
+        self.port = foobar.port
+        # super(foobarx, self)
 
     def usagex(self):
         if len(sys.argv) == 1:
@@ -50,7 +54,8 @@ class foobarx(control.control):
                 else:
                     foobar.usage()
             else:
-                print "\t your are not windows os !"
+                print "\tWARNING: your are not windows os !\n"
+                foobar.usage()
         else:
             foobar.usage()
 

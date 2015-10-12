@@ -13,10 +13,8 @@ __platform__ = 'all'
 __url__ = 'licface@yahoo.com'
 __build__ = '2.7'
 
-cfg = ConfigParser.RawConfigParser(allow_no_value=True)
-cfg.optionxform = str
-THIS_PATH = os.path.dirname(__file__)
-configname = 'pyfoobar.ini'
+global configname
+global THIS_PATH
 
 class MultiOrderedDict(OrderedDict):
     def __setitem__(self, key, value):
@@ -25,8 +23,19 @@ class MultiOrderedDict(OrderedDict):
         else:
             super(OrderedDict, self).__setitem__(key, value)
 
+cfg = ConfigParser.RawConfigParser(allow_no_value=True)
+cfg.optionxform = str
+THIS_PATH = os.path.dirname(__file__)
+configname = os.path.join(THIS_PATH, 'pyfoobar.ini')
+
 def get_config_file(filename='', verbosity=None):
-    configname = 'pyfoobar.ini'
+    configname = os.path.join(THIS_PATH, 'pyfoobar.ini')
+    if filename == '':
+        if configname != '':
+            filename = configname
+        else:
+            return WindowsError('No Config file found !')
+
     if os.path.isfile(os.path.join(os.getcwd(), filename)):
         #print "FILENAME ZZZ=", f
         configname = os.path.join(os.getcwd(), filename)
