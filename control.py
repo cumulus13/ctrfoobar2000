@@ -32,6 +32,9 @@ class control(object):
         else:
             self.prog_path = os.getenv('ProgramFiles')       
 
+    def getModulePath(self):
+        return configset.read_config('MODULE', 'path')
+
     def re_init(self):
         #print "self.ctype =", self.ctype
         if self.ctype == 'com':

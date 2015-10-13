@@ -2,7 +2,7 @@
 import configset
 import os, sys
 
-MODULE_PATH = configset.read_config('MODULE','path')
+MODULE_PATH = configset.read_config('MODULE', 'path')
 
 if sys.platform == 'win32':
     if os.path.isdir(r'c:/pyx'):
@@ -14,6 +14,7 @@ else:
     sys.path.insert(0, MODULE_PATH)
 
 from ctrfoobar2000 import control
+
 foobar = control.control()
 
 class foobarx(control.control):
