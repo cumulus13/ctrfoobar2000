@@ -226,6 +226,7 @@ class foobar(object):
 
     def playTrack(self, track):
         #print "TRACK =", track
+        # track = str(int(track) - 1)
         data = {'cmd':'Start', 'param1':str(track)}
         url = self.setURL(data)
         #print "url =", url
@@ -444,6 +445,10 @@ class foobar(object):
 
     def playFolder(self, folder):
         folder = os.path.abspath(folder)
+        if '/' in folder[0]:
+            folder = str(folder).replace('/', '\\')
+            folder = folder[1:]
+        
         self.stop()
         self.clearPlaylist()
         #http://192.168.10.10:8888/default/?cmd=Browse&param1=M%3A\INSTRUMENTAL\GUITAR\Acoustic%20Rock\Vol.%2006\&param2=EnqueueDir

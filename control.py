@@ -389,10 +389,15 @@ class control(object):
         #else:
             #print "ALIAS is NOT a DIRECTORY"
             #return False
+        
+    def getVersion(self):
+        from . import __version__, __test__
+        print "\tVersion: " + str(__version__) + "." + str(__test__)
+        sys.exit(0)
 
     def usage(self, print_help=None):
         print "\n"
-        parser = argparse.ArgumentParser()
+        parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
         parser.add_argument('-l', '--list', help='List type of foobar2000 [com] or List Playlist [http]', action='store_true')
         parser.add_argument('-p', '--play', help='Play Playback', action='store_true')
         parser.add_argument('-s', '--stop', help='Stop Playback', action='store_true')
@@ -420,6 +425,7 @@ class control(object):
         parser.add_argument('-T', '--section', help="Set Section Config", action="store")
         parser.add_argument('-E', '--option', help="Set Option Config", action="store", nargs=2)   
         parser.add_argument('-a', '--dir-alias', help="Root of Directory Alias On Server [HTTP]", action="store")
+        parser.add_argument('-v', '--version', help='-v = show version | -vv = verbosity process', action='count')
 
         subparser = parser.add_subparsers(title='TYPE CONTROLLER', dest='TYPE')
 
@@ -444,6 +450,7 @@ class control(object):
         args_com.add_argument('-g', '--read-config', help="Read config file", action="store_true")
         args_com.add_argument('-T', '--section', help="Set Section Config", action="store")
         args_com.add_argument('-E', '--option', help="Set Option Config", action="store", nargs=2)
+        args_com.add_argument('-v', '--version', help='-v = show version | -vv = verbosity process', action='count')
 
         args_http = subparser.add_parser('http', help='Type Controller "http"')
         args_http.add_argument('-p', '--play', help='Play Playback', action='store_true')
@@ -471,6 +478,7 @@ class control(object):
         args_http.add_argument('-T', '--section', help="Set Section Config", action="store")
         args_http.add_argument('-E', '--option', help="Set Option Config", action="store", nargs=2)
         args_http.add_argument('-a', '--dir-alias', help="Root of Directory Alias On Server", action="store")
+        args_http.add_argument('-v', '--version', help='-v = show version | -vv = verbosity process', action='count')
         args_http.add_argument('-L', '--level-alias', help="Level Root of Directory Alias On Server", action="store", default=0)
 
         if len(sys.argv) == 1:
@@ -495,6 +503,8 @@ class control(object):
                     #self.host = options.host
                 #if options.port:
                     #self.port = options.port
+                if options.version == 1:
+                    print self.getVersion()
                 if options.type_controller:
                     if options.type_controller == 'com' or options.type_controller == 'http':
                         self.ctype = options.type_controller
@@ -522,7 +532,7 @@ class control(object):
                     #print "option PLAY"
                     self.play()
                 elif options.play_track:
-                    self.playTrack(options.play_track)
+                    self.playTrack(str(int(options.play_track) - 1))
                 elif options.stop:
                     self.stop()
                 elif options.pause:
