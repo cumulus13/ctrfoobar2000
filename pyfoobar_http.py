@@ -443,12 +443,13 @@ class foobar(object):
         pl = len(self.playlist()[0:-1])
         return pl
 
-    def playFolder(self, folder):
+    def playFolder(self, folder, verbosity=None):
         folder = os.path.abspath(folder)
         if '/' in folder[0]:
             folder = str(folder).replace('/', '\\')
             folder = folder[1:]
-        
+        if verbosity:
+            print "FOLDER::",folder
         self.stop()
         self.clearPlaylist()
         #http://192.168.10.10:8888/default/?cmd=Browse&param1=M%3A\INSTRUMENTAL\GUITAR\Acoustic%20Rock\Vol.%2006\&param2=EnqueueDir

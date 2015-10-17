@@ -166,9 +166,9 @@ class control(object):
         self.re_init()
         return self.foobar2000.addFolder(folder)
 
-    def playFolder(self, folder):
+    def playFolder(self, folder, verbosity=None):
         self.re_init()
-        return self.foobar2000.playFolder(folder)
+        return self.foobar2000.playFolder(folder, verbosity)
 
     def kill(self, pid=None):
         import win32ts
@@ -560,7 +560,10 @@ class control(object):
                         folder = self.format_alias_dir(options.addfolderplay, options.dir_alias, options.level_alias)
                         #print "FOLDER =", folder
                         #if os.path.isdir(folder):
-                        self.playFolder(folder)
+                        if options.version == 2:
+                            self.playFolder(folder, True)
+                        else:
+                            self.playFolder(folder)
                         #else:
                             #print "\n"
                             #print "\t Invalid Alias or Folder not Exist !\n"
