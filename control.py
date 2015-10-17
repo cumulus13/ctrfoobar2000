@@ -334,9 +334,9 @@ class control(object):
         except:
             print "ERROR:",traceback.format_exc()
             self.check_connection()
-            print "\t This only use with Foobar2000 HTTP Server Controller Plugin !"        
+            print "\t This only use with Foobar2000 HTTP Server Controller Plugin !"
 
-    def format_alias_dir(self, path, alias=None, level=0):
+    def format_alias_dir(self, path, alias=None, level=0, verbosity=None):
         print "PATH    0=", os.path.splitdrive(path)
         # print "PATH x   =", self.THIS_PATH
         if path != None:
@@ -383,6 +383,8 @@ class control(object):
 
         result = os.path.join(alias_join, path_join)
         #print "RESULT                   =", result
+        if verbosity:
+            print "RESULT ::",result
         return result
         #if os.path.isdir(result):
             #return result
@@ -505,6 +507,10 @@ class control(object):
                     #self.port = options.port
                 if options.version == 1:
                     print self.getVersion()
+                elif options.version == 2:
+                    verbosity = True
+                else:
+                    verbosity = False
                 if options.type_controller:
                     if options.type_controller == 'com' or options.type_controller == 'http':
                         self.ctype = options.type_controller
@@ -557,7 +563,7 @@ class control(object):
                     self.addFolder(options.addfolder)
                 elif options.addfolderplay:
                     if options.addfolderplay:
-                        folder = self.format_alias_dir(options.addfolderplay, options.dir_alias, options.level_alias)
+                        folder = self.format_alias_dir(options.addfolderplay, options.dir_alias, options.level_alias, verbosity)
                         #print "FOLDER =", folder
                         #if os.path.isdir(folder):
                         if options.version == 2:
