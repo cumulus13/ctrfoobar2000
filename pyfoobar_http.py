@@ -5,6 +5,7 @@ import sys
 import time
 from bs4 import BeautifulSoup as bs
 import urlparse
+import platform
 
 CONF_FILE = os.path.join(os.path.dirname(__file__), 'pyfoobar.ini')
 
@@ -444,7 +445,14 @@ class foobar(object):
         return pl
 
     def playFolder(self, folder, verbosity=None):
-        folder = os.path.abspath(folder)
+        if verbosity:
+            print "FOLDER00::",folder
+        if platform.uname()[0] == 'Windows':
+            folder = os.path.abspath(folder)
+        else:
+            folder = folder
+        if verbosity:
+            print "FOLDER0::",folder
         if '/' in folder[0]:
             folder = str(folder).replace('/', '\\')
             folder = folder[1:]
@@ -461,6 +469,8 @@ class foobar(object):
         folder = str(folder).replace('(', '%28')
         folder = str(folder).replace(')', '%29')
         folder = folder + "\\"
+        if verbosity:
+            print "FOLDER1::",folder
         data = {'param1':folder, 'param2':'EnqueueDir', 'cmd':'Browse'}
         url = self.setURL(data)
         c_handle.play(url)
