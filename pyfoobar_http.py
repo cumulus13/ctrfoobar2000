@@ -428,14 +428,38 @@ class foobar(object):
         url = self.setURL(data)
         return c_handle.play(url)
 
-    def addFolder(self, folder):
-        folder = os.path.abspath(folder)
-        folder = str(folder).replace(':', '%3A')
-        folder = str(folder).replace(' ', '%20')
-        folder = str(folder).replace('&', '%26')
-        folder = str(folder).replace('(', '%28')
-        folder = str(folder).replace(')', '%29')
-        folder = folder + "\\"
+    def addFolder(self, folder,verbosity=None):
+        if verbosity:
+            print "FOLDER00    ::",folder
+        if platform.uname()[0] == 'Windows':
+            folder = os.path.abspath(folder)
+        else:
+            folder = folder
+        if verbosity:
+            print "FOLDER0     ::",folder
+        if '/' in folder[3]:
+            folder = str(folder).replace('/', '\\')
+            #folder = folder[1:]
+        if verbosity:
+            print "FOLDER      ::",folder
+        if platform.uname()[0] == 'Windows':
+            folder = os.path.abspath(folder)
+            folder = str(folder).replace(':', '%3A')
+            folder = str(folder).replace(' ', '%20')
+            folder = str(folder).replace('&', '%26')
+            folder = str(folder).replace('(', '%28')
+            folder = str(folder).replace(')', '%29')
+            folder = folder + "\\"
+        else:
+            folder = str(folder).replace(':', '%3A')
+            folder = str(folder).replace(' ', '%20')
+            folder = str(folder).replace('&', '%26')
+            folder = str(folder).replace('(', '%28')
+            folder = str(folder).replace(')', '%29')
+            folder = folder + "\\"
+
+        if verbosity:
+            print "FOLDER1     ::",folder
         data = {'param1':folder, 'param2':'EnqueueDir', 'cmd':'Browse'}
         url = self.setURL(data)
         return c_handle.play(url)
@@ -453,7 +477,7 @@ class foobar(object):
             folder = folder
         if verbosity:
             print "FOLDER0::",folder
-        if '/' in folder[0]:
+        if '/' in folder:
             folder = str(folder).replace('/', '\\')
             folder = folder[1:]
         if verbosity:

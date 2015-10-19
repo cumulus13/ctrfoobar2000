@@ -6,6 +6,7 @@ import os
 import subprocess
 import urlparse
 import re
+import platform
 
 class control(object):
     def __init__(self, host=None, port=None):
@@ -162,9 +163,9 @@ class control(object):
         self.re_init()
         return self.foobar2000.deltrack(track)
 
-    def addFolder(self, folder):
+    def addFolder(self, folder, verbosity=None):
         self.re_init()
-        return self.foobar2000.addFolder(folder)
+        return self.foobar2000.addFolder(folder, verbosity)
 
     def playFolder(self, folder, verbosity=None):
         self.re_init()
@@ -337,17 +338,20 @@ class control(object):
             print "\t This only use with Foobar2000 HTTP Server Controller Plugin !"
 
     def format_alias_dir(self, path, alias=None, level=0, verbosity=None):
-        print "PATH    0=", os.path.splitdrive(path)
+        if verbosity:
+            print "PATH 0       =", os.path.splitdrive(path)
         # print "PATH x   =", self.THIS_PATH
         if path != None:
             # if os.path.splitdrive(path)[0] == '':
 
             path = os.path.abspath(path)
-        print "DRIVE    =", path
+        if verbosity:
+            print "DRIVE        =", path
         if alias == None:
             alias = (os.path.splitdrive(os.path.abspath(path))[0])
-        print "ALIAS    =", alias
-        print "LEVEL    =", level
+        if verbosity:
+            print "ALIAS        =", alias
+            print "LEVEL        =", level
         level = int(level)
         #print "LEVEL                    =", level
         #print "PATH 1                   =", path
@@ -361,30 +365,37 @@ class control(object):
         path  = str(path).split("\\")
         #print "PATH 2                   =", path
         path_join = "\\".join(path[level:])
-        #print "PATH_JOIN                =", path_join
-        #print "ALIAS                    =", alias
+        if verbosity:
+            print "PATH_JOIN    =", path_join
+            print "ALIAS        =", alias
         if ":" in alias:
             alias = str(alias).split("\\")
             if "\\" in alias[-1]:
                 alias_join = "\\".join(alias)
-                #print "ALIAS JOIN 1             =", alias_join
+                if verbosity:
+                    print "ALIAS JOIN 1 =", alias_join
             else:
                 alias_join = "\\".join(alias) + '\\'
-                #print "ALIAS JOIN 2             =", alias_join
+                if verbosity:
+                    print "ALIAS JOIN 2 =", alias_join
         else:
             alias = alias[0] + ":" + alias[1:]
             alias = str(alias).split("\\")
             if "\\" in alias[-1]:
                 alias_join = "\\".join(alias)
-                #print "ALIAS JOIN 3             =", alias_join
+                if verbosity:
+                    print "ALIAS JOIN 3 =", alias_join
             else:
                 alias_join = "\\".join(alias) + '\\'
-                #print "ALIAS JOIN 4             =", alias_join            
-
-        result = os.path.join(alias_join, path_join)
-        #print "RESULT                   =", result
+                if verbosity:
+                    print "ALIAS JOIN 4 =", alias_join            
+        if platform.uname()[0] == 'Linux':
+            result = alias_join + path_join
+        elif platform.uname()[0] == 'Windows':
+            result = os.path.join(alias_join, path_join)
+        
         if verbosity:
-            print "RESULT ::",result
+            print "RESULT      ::",result
         return result
         #if os.path.isdir(result):
             #return result
@@ -560,7 +571,14 @@ class control(object):
                 elif options.list:
                     self.playlist() 
                 elif options.addfolder:
-                    self.addFolder(options.addfolder)
+                    #self.addFolder(options.addfolder, verbosity)
+                    folder = self.format_alias_dir(options.addfolder, options.dir_alias, options.level_alias, verbosity)
+                    #print "FOLDER =", folder
+                    #if os.path.isdir(folder):
+                    if options.version == 2:
+                        self.addFolder(folder, True)
+                    else:
+                        self.addFolder(folder)
                 elif options.addfolderplay:
                     if options.addfolderplay:
                         folder = self.format_alias_dir(options.addfolderplay, options.dir_alias, options.level_alias, verbosity)
