@@ -343,7 +343,6 @@ class control(object):
         # print "PATH x   =", self.THIS_PATH
         if path != None:
             # if os.path.splitdrive(path)[0] == '':
-
             path = os.path.abspath(path)
         if verbosity:
             print "DRIVE        =", path
@@ -392,7 +391,10 @@ class control(object):
         if platform.uname()[0] == 'Linux':
             result = alias_join + path_join
         elif platform.uname()[0] == 'Windows':
-            result = os.path.join(alias_join, path_join)
+            if verbosity:
+                print "PATH_JOIN 2  =", path_join
+                print "ALIAS JOIN 5 =", alias_join
+            result = os.path.join(alias_join, os.path.splitdrive(path_join)[1])
         
         if verbosity:
             print "RESULT      ::",result
