@@ -7,6 +7,8 @@ import subprocess
 import urlparse
 import re
 import platform
+import time
+PAGE = 0
 
 class control(object):
     def __init__(self, host=None, port=None):
@@ -20,6 +22,8 @@ class control(object):
         self.type_foobar = cfg.options('TYPE')
         self.error = ''
         self.nircmd = r"c:\EXE\nircmd.exe"
+        if not os.path.isfile(self.nircmd):
+            self.nircmd = r"nircmd.exe"
         self.ctype = configset.read_config('CONTROL', 'type')
         self.foobar2000 = ''
         # if self.ctype == 'com':
@@ -47,7 +51,7 @@ class control(object):
             import pyfoobar_http
             self.foobar2000 = pyfoobar_http.foobar(self.host, self.port)
 
-    def play(self):
+    def play(self, stop=False):
         self.re_init()
         try:
             return self.foobar2000.play()
@@ -56,12 +60,22 @@ class control(object):
             self.check_connection()
             print "\t Error communication with Foobar2000 [COM|HTTP] Server !"
 
-    def playTrack(self, track):
+    def playTrack(self, track, page=None):
         self.re_init()
-        #print "TRACK 0 =", track
+        # print "TRACK 0 =", track
         try:
-            return self.foobar2000.playTrack(track)
+            return self.foobar2000.playTrack(track, page)
         except:
+            self.check_connection()
+            print "\t This only use with with Foobar2000 HTTP Server Controller Plugin !"
+
+    def seekSecond(self, seeks):
+        self.re_init()
+        try:
+            return self.foobar2000.seekSecond(seeks)
+        except:
+            import traceback
+            traceback.format_exc()
             self.check_connection()
             print "\t This only use with with Foobar2000 HTTP Server Controller Plugin !"
 
@@ -167,9 +181,13 @@ class control(object):
         self.re_init()
         return self.foobar2000.addFolder(folder, verbosity)
 
-    def playFolder(self, folder, verbosity=None):
+    def addFiles(self, files):
         self.re_init()
-        return self.foobar2000.playFolder(folder, verbosity)
+        return self.foobar2000.addFiles(files)
+
+    def playFolder(self, folder, verbosity=None, clear=True):
+        self.re_init()
+        return self.foobar2000.playFolder(folder, verbosity, clear)
 
     def kill(self, pid=None):
         import win32ts
@@ -261,10 +279,29 @@ class control(object):
             print "\n"          
         return self.foobar2000.check_connection()
 
-    def playlist(self):
+    def printPages(self, pages):
+        pages_print = ""
+        for i in pages:
+            pages_print += str(i) + " | "
+        if pages_print:
+            if pages_print[-3:] == " | ":
+                pages_print = pages_print[:-3]
+
+        # print pages_print
+        return pages_print
+
+    def playlist(self, page=None):
         self.re_init()
+        global PAGE
+        if page:
+            PAGE = page
+        if PAGE:
+            page = PAGE
+        pages = self.foobar2000.getPages(page)
         try:
-            pl = self.foobar2000.playlist()[0:-1]
+            # print "self.foobar2000.playlist(page) =", self.foobar2000.playlist(page)
+            # print "-"*200
+            pl = self.foobar2000.playlist(page)[0:]
             if len(pl) > 9:
                 for i in range(0, 9):
                     print str(i + 1) + '.  ' + unicode(pl[i][0]).encode('UTF-8')
@@ -274,13 +311,32 @@ class control(object):
                     print "-"*len(unicode(pl[i][0]).encode('UTF-8'))
             else:
                 for i in pl:
-                    print str(pl.index(i) + 1) + ".", unicode(i[0]).encode('UTF-8')
-                    print "-"*len(unicode(i[0]).encode('UTF-8'))
+                    if i:
+                        print str(pl.index(i) + 1) + ".", unicode(i[0]).encode('UTF-8')
+                        print "-"*len(unicode(i[0]).encode('UTF-8'))
             print "\n"
-            q = raw_input("\t Do you want to play Track No: ")
+            if pages:
+                print "\t PAGE:", self.printPages(pages)
+                print "\n"
+            q = raw_input("\t Do you want to play Track No [x = exit, p[number] = page number]: ")
             if q != '':
                 #print "PLAY TRACK", q
-                self.playTrack(str(int(q) - 1))
+                if q == 'x':
+                    try:
+                        sys.exit(0)
+                    except:
+                        pass
+                if q[0].lower() == 'p' and len(q) > 1:
+                    return self.playlist(q[1])
+                if q == 'Previous' or q == 'First' or q == 'Next' or q == 'Last':
+                    page_number = re.findall("param1=.*?$", pages.get(q))[0].split('param1=')[1]
+                    return self.playlist(page_number)
+                try:
+                    self.playTrack(str(int(q) - 1), page)
+                    return self.playlist()
+                except:
+                    pass
+                return self.playlist()
         except:
             print "ERROR =", traceback.format_exc_syslog_growl()
             self.check_connection()
@@ -399,16 +455,39 @@ class control(object):
         if verbosity:
             print "RESULT      ::",result
         return result
-        #if os.path.isdir(result):
-            #return result
-        #else:
-            #print "ALIAS is NOT a DIRECTORY"
-            #return False
         
     def getVersion(self):
         from . import __version__, __test__
         print "\tVersion: " + str(__version__) + "." + str(__test__)
         sys.exit(0)
+
+    def repeat(self, tnum):
+        self.re_init()
+        try:
+            return self.foobar2000.repeat(tnum)
+        except:
+            print traceback.format_exc_syslog_growl(True)
+            self.check_connection()
+            print "\t Error communication with Foobar2000 [COM|HTTP] Server !"
+
+    def add_resursive_folders(self, folders):
+        exps = ['img', 'imgs', 'cover', 'platlist', 'covers']
+        exps_files = ['.jpg', '.ini', '.pls', '.m3u', '.txt', '.md', '.rst', '.db', '.jpeg', '.png', '.bmp', '.gif', '.exe', '.py', '.php', '.pyc', '.db3', '.list']
+        list_dirs = []
+        list_files = []
+        for root, dirs, files in os.walk(folders):
+            if len(dirs) > 0:
+                # print "dirs =", dirs
+                for i in dirs:
+                    if not str(i).lower() in exps:
+                        dirs_add = os.path.join(root, i)
+                        # print "dirs_add =", dirs_add
+                        list_dirs.append(dirs_add)
+            if len(files) > 0:
+                for i in files:
+                    if not os.path.splitext(str(i).lower())[1] in exps_files:
+                        list_files.append(os.path.join(root, i))
+        return list_dirs, list_files
 
     def usage(self, print_help=None):
         print "\n"
@@ -430,8 +509,10 @@ class control(object):
         parser.add_argument('-q', '--close', help='Just close Foobar2000 [com]', action='store_true')
         parser.add_argument('-S', '--type-controller', help='Set Type Of Controller [com,http]', action='store')
         parser.add_argument('-x', '--store-config', help='Store Set Type Of Controller [com,http]', action='store_true')
-        parser.add_argument('-f', '--addfolder', help='Add Remote Folder Queue [HTTP]', action='store')
-        parser.add_argument('-F', '--addfolderplay', help='Add Remote Folder Queue & Play it [HTTP]', action='store')
+        parser.add_argument('-f', '--addfolder', help='Add Remote Folder Queue [HTTP]', action='store', nargs='*')
+        parser.add_argument('-fi', '--addfiles', help='Add Remote Files Queue [HTTP]', action='store', nargs='*')
+        parser.add_argument('-F', '--addfolderplay', help='Add Remote Folder Queue & Play it [HTTP]', action='store', nargs='*')
+        parser.add_argument('-Fi', '--addfilesplay', help='Add Remote Folder Queue & Play it [HTTP]', action='store', nargs='*')
         parser.add_argument('-c', '--clear-playlist', help='Clear Current Playlist [HTTP]', action='store_true')
         parser.add_argument('-H', '--host', help="Remote Host control Address [HTTP]", action='store')
         parser.add_argument('-O', '--port', help="Remote Port control Address [HTTP]", action='store')      
@@ -466,7 +547,7 @@ class control(object):
         args_com.add_argument('-T', '--section', help="Set Section Config", action="store")
         args_com.add_argument('-E', '--option', help="Set Option Config", action="store", nargs=2)
         args_com.add_argument('-v', '--version', help='-v = show version | -vv = verbosity process', action='count')
-
+        #FOOBAR2000 HTTP PLUGIN
         args_http = subparser.add_parser('http', help='Type Controller "http"')
         args_http.add_argument('-p', '--play', help='Play Playback', action='store_true')
         args_http.add_argument('-t', '--play-track', help="Play Playback Track No", action="store")
@@ -478,8 +559,10 @@ class control(object):
         args_http.add_argument('-V', '--volume', help='Set Volume, range is -100 <= value <= 0', action='store')
         args_http.add_argument('-m', '--mute', help='Mute Volume', action='store_true')
         args_http.add_argument('-i', '--info', help='Get info current Playing', action="store_true")
-        args_http.add_argument('-f', '--addfolder', help='Add Remote Folder Queue [HTTP]', action='store')
-        args_http.add_argument('-F', '--addfolderplay', help='Add Remote Folder Queue & Play it [HTTP]', action='store')
+        args_http.add_argument('-f', '--addfolder', help='Add Remote Folder Queue [HTTP]', action='store', nargs='*')
+        args_http.add_argument('-fi', '--addfiles', help='Add Remote Files Queue [HTTP]', action='store', nargs='*')
+        args_http.add_argument('-F', '--addfolderplay', help='Add Remote Folder Queue & Play it [HTTP]', action='store', nargs='*')
+        args_http.add_argument('-Fi', '--addfilesplay', help='Add Remote Folder Queue & Play it [HTTP]', action='store', nargs='*')
         args_http.add_argument('-c', '--clear-playlist', help='Clear Current Playlist [HTTP]', action='store_true')
         args_http.add_argument('-d', '--del-track', help='Delete Playlist [HTTP], example: foobar -d 1 2 3', action='store', nargs='*')
         args_http.add_argument('-l', '--list', help='List Playlist', action='store_true')
@@ -495,6 +578,16 @@ class control(object):
         args_http.add_argument('-a', '--dir-alias', help="Root of Directory Alias On Server", action="store")
         args_http.add_argument('-v', '--version', help='-v = show version | -vv = verbosity process', action='count')
         args_http.add_argument('-L', '--level-alias', help="Level Root of Directory Alias On Server", action="store", default=0)
+        args_http.add_argument('-z', '--repeat', help='Repeat 0 = Default (repeat off) | 1 = Repeat Playlist | 2 = Repeat Track | 3 = Random Play | 4 = Shuffle Track | 5 = Shuffle Album | 6 = Shuffle Folders', action='store')
+        args_http.add_argument('--repeat-off', help='Repeat Off', action='store_true')
+        args_http.add_argument('--repeat-playlist', help='Repeat Playlist', action='store_true')
+        args_http.add_argument('--repeat-track', help='Repeat Track', action='store_true')
+        args_http.add_argument('--repeat-random', help='Random Play', action='store_true')
+        args_http.add_argument('--shuffle-track', help='Shuffle Track', action='store_true')
+        args_http.add_argument('--shuffle-album', help='Shuffle Album', action='store_true')
+        args_http.add_argument('--shuffle-folder', help='Shuffle by Folder', action='store_true')
+        args_http.add_argument('--seek', help='Seek for a second', action='store')
+        args_http.add_argument('--root', help='Root path / Directory Containt Music files, this is for One Folder Files Selected', action='store')
 
         if len(sys.argv) == 1:
             if self.ctype == 'http':
@@ -513,11 +606,6 @@ class control(object):
         else:        
             if self.ctype == 'http':
                 options = args_http.parse_args()
-                #self.__init__(options.host, options.port)
-                #if options.host:
-                    #self.host = options.host
-                #if options.port:
-                    #self.port = options.port
                 if options.version == 1:
                     print self.getVersion()
                 elif options.version == 2:
@@ -545,10 +633,9 @@ class control(object):
                         print configset.write_config2(options.section, options.option[0], self.conf, options.option[1])
                     else:
                         args_http.parse_args(['http', '-h'])
-                elif options.clear_playlist:
+                if options.clear_playlist:
                     self.clearPlaylist()
-                elif options.play:
-                    #print "option PLAY"
+                if options.play:
                     self.play()
                 elif options.play_track:
                     self.playTrack(str(int(options.play_track) - 1))
@@ -564,49 +651,132 @@ class control(object):
                     self.random()
                 elif options.volume:
                     self.volume(options.volume)
-                elif options.mute:
+                elif options.repeat:
+                    self.repeat(options.repeat)
+                elif options.repeat_track:
+                    self.repeat(2)
+                elif options.repeat_playlist:
+                    self.repeat(1)
+                elif options.repeat_off:
+                    self.repeat(0)
+                elif options.repeat_random:
+                    self.repeat(3)
+                elif options.shuffle_track:
+                    self.repeat(4)
+                elif options.shuffle_album:
+                    self.repeat(5)
+                elif options.shuffle_folder:
+                    self.repeat(6)
+                # else:
+                #     args_http.parse_args(['http', '-h'])
+                if options.mute:    
                     self.mute()
-                elif options.browser:
+                if options.browser:
                     self.browser()                
-                elif options.info:
+                if options.info:
                     self.info()    
-                elif options.list:
-                    self.playlist() 
-                elif options.addfolder:
-                    #self.addFolder(options.addfolder, verbosity)
-                    folder = self.format_alias_dir(options.addfolder, options.dir_alias, options.level_alias, verbosity)
-                    #print "FOLDER =", folder
-                    #if os.path.isdir(folder):
-                    if options.version == 2:
-                        self.addFolder(folder, True)
-                    else:
-                        self.addFolder(folder)
-                elif options.addfolderplay:
-                    if options.addfolderplay:
-                        folder = self.format_alias_dir(options.addfolderplay, options.dir_alias, options.level_alias, verbosity)
-                        #print "FOLDER =", folder
-                        #if os.path.isdir(folder):
-                        if options.version == 2:
-                            self.playFolder(folder, True)
+                if options.addfiles:
+                    # print "os.getcwd() =", os.getcwd()
+                    if options.clear_playlist:
+                        self.clearPlaylist()
+                    add_files = []
+                    for i in options.addfiles:
+                        if options.root:
+                            i = os.path.join(options.root, i)
                         else:
-                            self.playFolder(folder)
-                        #else:
-                            #print "\n"
-                            #print "\t Invalid Alias or Folder not Exist !\n"
-                            #args_http.parse_args(['http', '-h'])                         
+                            i = os.path.abspath(i)
+                        # print "i =", i
+                        files = self.format_alias_dir(i, options.dir_alias, options.level_alias, verbosity)
+                        add_files.append(files)
+                    self.addFiles(add_files)
+                if options.addfilesplay:
+                    if options.clear_playlist:
+                        self.clearPlaylist()
+                    add_files = []
+                    for i in options.addfilesplay:
+                        if options.root:
+                            i = os.path.join(options.root, i)
+                        else:
+                            i = os.path.abspath(i)
+                        # print "i =", i
+                        files = self.format_alias_dir(i, options.dir_alias, options.level_alias, verbosity)
+                        # print "files =", files
+                        add_files.append(files)
+                    self.addFiles(add_files)
+                    self.stop()
+                    self.play()
+                if options.addfolder:
+                    add_folders = []
+                    for i in options.addfolder:
+                        #self.addFolder(options.addfolder, verbosity)
+                        folder = self.format_alias_dir(i, options.dir_alias, options.level_alias, verbosity)
+                        if len(self.add_resursive_folders(folder)[0]) > 0:
+                            add_folders += self.add_resursive_folders(folder)
+                            add_folders.insert(0, folder)
+                    if add_folders:
+                        for i in add_folders:
+                            folder = self.format_alias_dir(i, options.dir_alias, options.level_alias, verbosity)
+                            if options.version == 2:
+                                self.addFolder(folder, True)
+                            else:
+                                self.addFolder(folder)
                     else:
-                        print "\n"
-                        print "\t Please use -F and option -a or and -L\n"
-                        args_http.parse_args(['http', '-h'])
-                    #self.playFolder(options.addfolderplay)
-                elif options.usage:
+                        for i in options.addfolder:
+                            folder = self.format_alias_dir(i, options.dir_alias, options.level_alias, verbosity)
+                            if options.version == 2:
+                                self.addFolder(folder, True)
+                            else:
+                                self.addFolder(folder)
+                if options.addfolderplay:
+                    self.stop()
+                    self.clearPlaylist()
+                    add_folders = []
+                    for i in options.addfolderplay:
+                        folder = self.format_alias_dir(i, options.dir_alias, options.level_alias, verbosity)
+                        if len(self.add_resursive_folders(folder)[0]) > 0:
+                            add_folders += self.add_resursive_folders(folder)[0]
+                            add_folders.insert(0, folder)
+                        if len(add_folders) == 0:
+                            add_folders.insert(0, i)
+                    # print "add_folders =", add_folders
+                    if add_folders:
+                        for i in add_folders:
+                            folder = self.format_alias_dir(i, options.dir_alias, options.level_alias, verbosity)
+                            if options.version == 2:
+                                self.playFolder(folder, True, False)
+                                time.sleep(len(os.listdir(i)))
+                            else:
+                                self.playFolder(folder, clear=False)
+                                time.sleep(len(os.listdir(i)))
+                    else:
+                        for i in options.addfolderplay:
+                            folder = self.format_alias_dir(i, options.dir_alias, options.level_alias, verbosity)
+                            if options.version == 2:
+                                self.playFolder(folder, True, False)
+                                if len(add_folders) == 1:
+                                    time.sleep(len(os.listdir(i))/2)
+                                else:
+                                    time.sleep(len(os.listdir(i)))
+                                
+                            else:
+                                self.playFolder(folder, clear=False)
+                                if len(add_folders) == 1:
+                                    time.sleep(len(os.listdir(i))/2)
+                                else:
+                                    time.sleep(len(os.listdir(i)))
+                                
+                    self.play()
+                if options.list:
+                    self.playlist()
+                if options.seek:
+                    self.seekSecond(options.seek)
+                if options.usage:
                     parser.print_help()
-                elif options.read_config:
+                if options.read_config:
                     self.readConfig()
-                elif options.del_track:
+                if options.del_track:
                     self.deltrack(options.del_track)
-                else:
-                    args_http.parse_args(['http', '-h'])
+                
 
             elif self.ctype == 'com':
                 options = args_com.parse_args()

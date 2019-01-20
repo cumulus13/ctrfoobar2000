@@ -6,6 +6,7 @@ import time
 from bs4 import BeautifulSoup as bs
 import urlparse
 import platform
+# from multiprocessing import ThreatPool
 
 CONF_FILE = os.path.join(os.path.dirname(__file__), 'pyfoobar.ini')
 
@@ -46,7 +47,7 @@ class urlhandle:
             return self.module.urlopen(url)
 
     def playTrack(self, url):
-        #print "url =", url
+        # print "url =", url
         if self.handle == 'requests':
             return self.module.get(url)
         else:
@@ -174,7 +175,13 @@ class urlhandle:
             #print "URL =", url
             return self.module.get(url)
         else:
-            return self.module.urlopen(url)	
+            return self.module.urlopen(url)
+
+    def repeat(self, url):
+        if self.handle == 'requests':
+            return self.module.get(url)
+        else:
+            return self.module.urlopen(url)
 
 try:
     import requests
@@ -225,13 +232,22 @@ class foobar(object):
         url = self.setURL(data)
         return c_handle.play(url)
 
-    def playTrack(self, track):
-        #print "TRACK =", track
-        # track = str(int(track) - 1)
+    def playTrack(self, track, page=None):
+        if page:
+            track = (30 * (int(page) - 1)) + int(track)
+        
         data = {'cmd':'Start', 'param1':str(track)}
         url = self.setURL(data)
         #print "url =", url
         return c_handle.play(url)
+
+    def seekSecond(self, seeks):
+        # print "seeks =", seeks
+        if seeks:
+            data = {'cmd':'SeekSecond', 'param1':str(seeks), 'param3':'NoResponse'}
+            url = self.setURL(data)
+            return c_handle.play(url)
+        return None
     
     def deltrack(self, track):
         if isinstance(track, list):
@@ -291,7 +307,7 @@ class foobar(object):
             print "def:browser_pre --> url =", url
 
         data1 = c_handle.browser(url).text
-        soup1 = bs(data1)
+        soup1 = bs(data1, 'lxml')
         data2 = soup1.find("table")
         data3 = soup1.find('div', {'class':'dir'})
         data5 = data3.find_all('a')
@@ -368,7 +384,7 @@ class foobar(object):
 
     def info(self):
         data1 = c_handle.info(self.url).text
-        soup1 = bs(data1)
+        soup1 = bs(data1, 'lxml')
         data2 = soup1.find(id = 'track_title')
         data3 = unicode(data2.text).encode('UTF-8')
         if "//" in data3:
@@ -411,9 +427,43 @@ class foobar(object):
         print "Album           :", album
         print "Album Artist    :", albumartist
 
-    def playlist(self):
-        data1 = c_handle.playlist(self.url).text
-        soup1 = bs(data1)
+    def getPages(self, page=None):
+        # print "self.urlopen =", self.url
+        URL = self.url
+        if page:
+            url_data = {'url':self.host, 'port':self.port, 'cmd':'P', 'param1':str(page), 'param2':''}
+            URL = self.setURL(url_data)
+        # print 'URL =', URL
+        url_parse = urlparse.urlparse(URL)
+        # print "url_parse =", url_parse
+        data1 = c_handle.playlist(URL).text
+        # print "data1 =", data1
+        soup1 = bs(data1, 'lxml')
+        data2 = soup1.find_all('p')
+        # print "data2 =", data2
+        data3 = ""
+        for i in data2:
+            if "First Previous " in i or " Next Last" in i:
+                data3 = i
+                break
+        pages = {}
+        if data3:
+            data4 = data3.find_all('a')
+            # print "data4 =", data4
+            for i in data4:
+                pages.update({i.text: url_parse.scheme + "://" + url_parse.netloc + i.get('href')})
+            # print "pages =", pages
+        return pages
+
+    def playlist(self, page=None):
+        # print "self.url =", self.url
+        URL = self.url
+        if page:
+            url_data = {'url':self.host, 'port':self.port, 'cmd':'P', 'param1':str(page), 'param2':''}
+            URL = self.setURL(url_data)
+        # print "URL =", URL
+        data1 = c_handle.playlist(URL).text
+        soup1 = bs(data1, 'lxml')
         data2 = soup1.find(id='pl')
         #data3 = data2.find_all('tr')
         #print "data3 =", data3
@@ -468,7 +518,43 @@ class foobar(object):
         pl = len(self.playlist()[0:-1])
         return pl
 
-    def playFolder(self, folder, verbosity=None):
+    def addFiles(self, files):
+        if isinstance(files, list):
+            for i in files:
+                if platform.uname()[0] == 'Windows':
+                    i = os.path.abspath(i)
+                else:
+                    i = i
+
+                i = str(i).replace(':', '%3A')
+                i = str(i).replace(' ', '%20')
+                i = str(i).replace('&', '%26')
+                i = str(i).replace('(', '%28')
+                i = str(i).replace(')', '%29')
+
+                data = {'param1':i, 'cmd':'Browse'}
+                url = self.setURL(data)
+                c_handle.play(url)
+        else:
+            if platform.uname()[0] == 'Windows':
+                files = os.path.abspath(files)
+            else:
+                files = files
+
+            files = str(files).replace(':', '%3A')
+            files = str(files).replace(' ', '%20')
+            files = str(files).replace('&', '%26')
+            files = str(files).replace('(', '%28')
+            files = str(files).replace(')', '%29')
+
+            data = {'param1':files, 'cmd':'Browse'}
+            url = self.setURL(data)
+            c_handle.play(url)
+        
+        # return self.play()
+
+
+    def playFolder(self, folder, verbosity=None, clear=True):
         if verbosity:
             print "FOLDER00::",folder
         if platform.uname()[0] == 'Windows':
@@ -482,8 +568,10 @@ class foobar(object):
             folder = folder[1:]
         if verbosity:
             print "FOLDER::",folder
-        self.stop()
-        self.clearPlaylist()
+        
+        if clear:
+            self.stop()
+            self.clearPlaylist()
         #http://192.168.10.10:8888/default/?cmd=Browse&param1=M%3A\INSTRUMENTAL\GUITAR\Acoustic%20Rock\Vol.%2006\&param2=EnqueueDir
         # http://127.0.0.1:8888/default/?cmd=Browse&param1=m%3A%5CWEST%5CDevil%20Shoots%20Devil%20%26%20What%20We%20Feel%20-%20Split%20%282007%29%5C
         # http://127.0.0.1:8888/default/?cmd=Browse&param1=m%3A\WEST\Devil Shoots Devil & What We Feel - Split (2007)\&param2=EnqueueDir
@@ -499,17 +587,33 @@ class foobar(object):
         url = self.setURL(data)
         c_handle.play(url)
         #self.close()
-        count = 0
-        while 1:
-            if self.playlistCount() == 0:
-                time.sleep(1)
-                count += 1
-                if count == 50:
-                    break
-            else:
-                break
+        # count = 0
+        # while 1:
+        #     if self.playlistCount() == 0:
+        #         time.sleep(1)
+        #         count += 1
+        #         if count == 50:
+        #             break
+        #     else:
+        #         break
+        # self.stop()
         return self.play()
+
+    def repeat(self, tnum):
+        '''
+            tnum: 0 = Default (repeat off)
+                  1 = Repeat Playlist
+                  2 = Repeat Track
+                  3 = Random Play
+                  4 = Shuffle Track
+                  5 = Shuffle Album
+                  6 = Shuffle Folders
+        '''
+        data = {'cmd':'PlaybackOrder', 'param1':str(tnum)}
+        url = self.setURL(data)
+        return c_handle.repeat(url)
 
 if __name__ == "__main__":
     c = foobar()
-    c.browser(1)
+    # c.browser(1)
+    c.getPages()
