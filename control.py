@@ -635,7 +635,7 @@ class control(object):
                         args_http.parse_args(['http', '-h'])
                 if options.clear_playlist:
                     self.clearPlaylist()
-                if options.play:
+                elif options.play:
                     self.play()
                 elif options.play_track:
                     self.playTrack(str(int(options.play_track) - 1))
@@ -767,6 +767,7 @@ class control(object):
                                 
                     self.play()
                 if options.list:
+                    time.sleep(4)
                     self.playlist()
                 if options.seek:
                     self.seekSecond(options.seek)
