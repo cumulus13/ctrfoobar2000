@@ -1,5 +1,5 @@
 import traceback
-from . import configset
+import configset
 import argparse
 import sys
 import os
@@ -48,7 +48,7 @@ class control(object):
             self.foobar2000 = pyfoobar.foobar()
         elif self.ctype == 'http':
             #print "HTTP SET"
-            from . import pyfoobar_http
+            import pyfoobar_http
             self.foobar2000 = pyfoobar_http.foobar(self.host, self.port)
 
     def play(self, stop=False):
@@ -645,7 +645,7 @@ class control(object):
                     self.pause()
                 elif options.previous:
                     self.previous()
-                elif options.__next__:
+                elif options.next:
                     next(self)
                 elif options.random:
                     self.random()

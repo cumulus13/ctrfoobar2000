@@ -7,3 +7,5 @@
 .hg/
 *.hgignore
 *.hgtags
+*.bak
+dist/

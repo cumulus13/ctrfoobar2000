@@ -4,7 +4,7 @@ import os
 import sys
 import time
 from bs4 import BeautifulSoup as bs
-import urlparse
+import urllib.parse
 import platform
 # from multiprocessing import ThreatPool
 
@@ -187,7 +187,7 @@ try:
     import requests
     c_handle = urlhandle('requests')
 except:
-    import urllib2
+    import urllib.request, urllib.error, urllib.parse
     c_handle = urlhandle('urllib2')
 
 class foobar(object):
@@ -219,8 +219,8 @@ class foobar(object):
         return None
 
     def check_connection(self):
-        import urlparse
-        parse = urlparse.urlparse(self.url)
+        import urllib.parse
+        parse = urllib.parse.urlparse(self.url)
         url = parse.scheme + "://" + parse.netloc
         return c_handle.check_connection(url)
 
@@ -276,7 +276,7 @@ class foobar(object):
     def isPaused(self):
         return None
 
-    def next(self):
+    def __next__(self):
         data = {'cmd':'StartNext'}
         url = self.setURL(data)
         return c_handle.play(url)
@@ -297,14 +297,14 @@ class foobar(object):
         data = {'cmd':'Browse'}
 
         if url == None:
-            print "def:browser_pre --> url == None"
+            print("def:browser_pre --> url == None")
             url = self.setURL(data)
         if direct_path != None:
-            print "def:browser_pre --> str(url) =", url
+            print("def:browser_pre --> str(url) =", url)
             url_edit1 = str(url).split("&param2")[0]
-            print "def:browser_pre --> url_edit1 =", url_edit1
+            print("def:browser_pre --> url_edit1 =", url_edit1)
             url = url_edit1 + direct_path
-            print "def:browser_pre --> url =", url
+            print("def:browser_pre --> url =", url)
 
         data1 = c_handle.browser(url).text
         soup1 = bs(data1, 'lxml')
@@ -328,20 +328,20 @@ class foobar(object):
     def browser(self, num_suffix=None, direct_path=None, url=None):
         data_urlx = self.browser_pre()[0]
         if num_suffix != None:
-            print "def:browser --> num_suffix ! = None"
-            r_url = urlparse.urlparse(self.url)
-            print "def:browser --> num_suffix ! --> r_url =", r_url
+            print("def:browser --> num_suffix ! = None")
+            r_url = urllib.parse.urlparse(self.url)
+            print("def:browser --> num_suffix ! --> r_url =", r_url)
             url = r_url.scheme + "://" + r_url.netloc + data_urlx.get(num_suffix)
-            print "def:browser --> num_suffix ! --> url =", url
+            print("def:browser --> num_suffix ! --> url =", url)
             data_urlx = self.browser_pre(url)
-            print "url X           2 =", data_urlx[2]
-            print "list_url_suffix 2 =", data_urlx[1]
-            print "list_file/dir   2 =", data_urlx[2]
-            print "+"*120
+            print("url X           2 =", data_urlx[2])
+            print("list_url_suffix 2 =", data_urlx[1])
+            print("list_file/dir   2 =", data_urlx[2])
+            print("+"*120)
             return self.browser_pre(url)
 
         if direct_path != None:
-            print "def:browser --> direct_path ! = None"
+            print("def:browser --> direct_path ! = None")
             data_urlx = self.browser_pre(url, direct_path=direct_path)
             return self.browser_pre(url, direct_path=direct_path)
         
@@ -386,7 +386,7 @@ class foobar(object):
         data1 = c_handle.info(self.url).text
         soup1 = bs(data1, 'lxml')
         data2 = soup1.find(id = 'track_title')
-        data3 = unicode(data2.text).encode('UTF-8')
+        data3 = str(data2.text).encode('UTF-8')
         if "//" in data3:
             #print "AAA"
             data4 = data3.split("//")
@@ -420,12 +420,12 @@ class foobar(object):
             #print "cd    =", cd
 
         #print "-" * 120
-        print "Artist          :", artist #unicode(artist).encode('UTF-8')
-        print "Song            :", song.strip()
-        print "Track           :", track
-        print "CD              :", cd
-        print "Album           :", album
-        print "Album Artist    :", albumartist
+        print("Artist          :", artist) #unicode(artist).encode('UTF-8')
+        print("Song            :", song.strip())
+        print("Track           :", track)
+        print("CD              :", cd)
+        print("Album           :", album)
+        print("Album Artist    :", albumartist)
 
     def getPages(self, page=None):
         # print "self.urlopen =", self.url
@@ -434,7 +434,7 @@ class foobar(object):
             url_data = {'url':self.host, 'port':self.port, 'cmd':'P', 'param1':str(page), 'param2':''}
             URL = self.setURL(url_data)
         # print 'URL =', URL
-        url_parse = urlparse.urlparse(URL)
+        url_parse = urllib.parse.urlparse(URL)
         # print "url_parse =", url_parse
         data1 = c_handle.playlist(URL).text
         # print "data1 =", data1
@@ -480,18 +480,18 @@ class foobar(object):
 
     def addFolder(self, folder,verbosity=None):
         if verbosity:
-            print "FOLDER00    ::",folder
+            print("FOLDER00    ::",folder)
         if platform.uname()[0] == 'Windows':
             folder = os.path.abspath(folder)
         else:
             folder = folder
         if verbosity:
-            print "FOLDER0     ::",folder
+            print("FOLDER0     ::",folder)
         if '/' in folder[3]:
             folder = str(folder).replace('/', '\\')
             #folder = folder[1:]
         if verbosity:
-            print "FOLDER      ::",folder
+            print("FOLDER      ::",folder)
         if platform.uname()[0] == 'Windows':
             folder = os.path.abspath(folder)
             folder = str(folder).replace(':', '%3A')
@@ -509,7 +509,7 @@ class foobar(object):
             folder = folder + "\\"
 
         if verbosity:
-            print "FOLDER1     ::",folder
+            print("FOLDER1     ::",folder)
         data = {'param1':folder, 'param2':'EnqueueDir', 'cmd':'Browse'}
         url = self.setURL(data)
         return c_handle.play(url)
@@ -556,18 +556,18 @@ class foobar(object):
 
     def playFolder(self, folder, verbosity=None, clear=True):
         if verbosity:
-            print "FOLDER00::",folder
+            print("FOLDER00::",folder)
         if platform.uname()[0] == 'Windows':
             folder = os.path.abspath(folder)
         else:
             folder = folder
         if verbosity:
-            print "FOLDER0::",folder
+            print("FOLDER0::",folder)
         if '/' in folder:
             folder = str(folder).replace('/', '\\')
             folder = folder[1:]
         if verbosity:
-            print "FOLDER::",folder
+            print("FOLDER::",folder)
         
         if clear:
             self.stop()
@@ -582,7 +582,7 @@ class foobar(object):
         folder = str(folder).replace(')', '%29')
         folder = folder + "\\"
         if verbosity:
-            print "FOLDER1::",folder
+            print("FOLDER1::",folder)
         data = {'param1':folder, 'param2':'EnqueueDir', 'cmd':'Browse'}
         url = self.setURL(data)
         c_handle.play(url)
