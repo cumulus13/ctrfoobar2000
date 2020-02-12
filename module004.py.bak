@@ -56,8 +56,8 @@ def status(service):
             #dplay2.play(datan02[0], "UNKNOW")
             pass
 
-        print("\n")
-        print("\t Service " + datan02[0] + " is : ", data005[2])
+        print "\n"
+        print "\t Service " + datan02[0] + " is : ", data005[2]
 
         return data005[2]
 
@@ -70,5 +70,5 @@ def status(service):
     #	print "\n"
     #	#print "\t Service " + datan02[0] + "is : ", data005[2]
 
-    except IOError as e:
-        print(e)
+    except IOError, e:
+        print e

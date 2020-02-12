@@ -37,5 +37,5 @@ def status(service):
         #	print "\n"
         #	#print "\t Service " + datan02[0] + "is : ", data005[2]
 
-        except IOError as e:
-                print(e)
+        except IOError, e:
+                print e

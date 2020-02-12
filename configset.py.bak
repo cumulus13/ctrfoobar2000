@@ -1,6 +1,6 @@
 import sys
 import argparse
-import configparser
+import ConfigParser
 import os
 import traceback
 import re
@@ -23,7 +23,7 @@ class MultiOrderedDict(OrderedDict):
         else:
             super(OrderedDict, self).__setitem__(key, value)
 
-cfg = configparser.RawConfigParser(allow_no_value=True)
+cfg = ConfigParser.RawConfigParser(allow_no_value=True)
 cfg.optionxform = str
 THIS_PATH = os.path.dirname(__file__)
 configname = 'pyfoobar.ini'
@@ -40,25 +40,25 @@ def get_config_file(filename='', verbosity=None):
         #print "FILENAME ZZZ=", f
         configname = os.path.join(os.getcwd(), filename)
         if verbosity:
-            print(os.path.join(os.getcwd(), filename))
+            print os.path.join(os.getcwd(), filename)
         return os.path.join(os.getcwd(), filename)
     elif os.path.isfile(filename):
         configname = filename
         if verbosity:
-            print(os.path.abspath(configname))
+            print os.path.abspath(configname)
         return filename
     elif os.path.isfile(os.path.join(os.path.dirname(__file__), filename)):
         configname = os.path.join(os.path.dirname(__file__), filename)
         if verbosity:
-            print(os.path.join(os.path.dirname(__file__), filename))
+            print os.path.join(os.path.dirname(__file__), filename)
         return os.path.join(os.path.dirname(__file__), filename)
     elif os.path.isfile(configname):
         if verbosity:
-            print(os.path.abspath(configname))
+            print os.path.abspath(configname)
         return configname
     elif os.path.isfile(os.path.join(os.path.dirname(__file__), configname)):
         if verbosity:
-            print(os.path.join(os.path.dirname(__file__), configname))
+            print os.path.join(os.path.dirname(__file__), configname)
         return os.path.join(os.path.dirname(__file__), configname)
     else:
         fcfg = os.path.join(os.path.dirname(__file__), configname)
@@ -66,7 +66,7 @@ def get_config_file(filename='', verbosity=None):
         f.close()
         filecfg = fcfg
         if verbosity:
-            print("CREATE:", os.path.abspath(filecfg))
+            print "CREATE:", os.path.abspath(filecfg)
         return filecfg
 
 def read_config(section, option, filename='', value=None, verbosity=None):
@@ -90,7 +90,7 @@ def read_config2(section, option, filename='', verbosity=None): #format ['aaa','
         
     """
     filename = get_config_file(filename, verbosity)
-    cfg = configparser.RawConfigParser(allow_no_value=True, dict_type=MultiOrderedDict) 
+    cfg = ConfigParser.RawConfigParser(allow_no_value=True, dict_type=MultiOrderedDict) 
     cfg.read(filename)
     cfg = cfg.get(section, option)
     return cfg
@@ -103,7 +103,7 @@ def read_config3(section, option, filename='', verbosity=None): #format result: 
     """
     filename = get_config_file(filename, verbosity)
     data = []
-    cfg = configparser.RawConfigParser(allow_no_value=True, dict_type=MultiOrderedDict) 
+    cfg = ConfigParser.RawConfigParser(allow_no_value=True, dict_type=MultiOrderedDict) 
     cfg.read(filename)
     cfg = cfg.get(section, option)
     for i in cfg:
@@ -125,7 +125,7 @@ def read_config4(section, option, filename='', verbosity=None): #format result: 
     """
     filename = get_config_file(filename, verbosity)
     data = []
-    cfg = configparser.RawConfigParser(allow_no_value=True, dict_type=MultiOrderedDict) 
+    cfg = ConfigParser.RawConfigParser(allow_no_value=True, dict_type=MultiOrderedDict) 
     cfg.read(filename)
     cfg = cfg.get(section, option)
     if not cfg == None:
@@ -148,7 +148,7 @@ def read_config5(section, option, filename='', verbosity=None): #format result: 
     """
     filename = get_config_file(filename, verbosity)
     data = {}
-    cfg = configparser.RawConfigParser(allow_no_value=True, dict_type=MultiOrderedDict) 
+    cfg = ConfigParser.RawConfigParser(allow_no_value=True, dict_type=MultiOrderedDict) 
     cfg.read(filename)
     cfg = cfg.get(section, option)
     for i in cfg:
@@ -172,7 +172,7 @@ def read_config6(section, option, filename='', verbosity=None): #format result: 
     """
     filename = get_config_file(filename, verbosity)
     data = {}
-    cfg = configparser.RawConfigParser(allow_no_value=True, dict_type=MultiOrderedDict) 
+    cfg = ConfigParser.RawConfigParser(allow_no_value=True, dict_type=MultiOrderedDict) 
     cfg.read(filename)
     cfg = cfg.get(section, option)
     for i in cfg:
@@ -199,7 +199,7 @@ def write_config(section, option, filename='', value=None, verbosity=None):
             cfg.read(filename)
         try:
             cfg.set(section, option, value)
-        except configparser.NoSectionError:
+        except ConfigParser.NoSectionError:
             cfg.add_section(section)
             cfg.set(section, option, value)
         cfg_data = open(filename,'wb')
@@ -219,11 +219,11 @@ def write_config2(section, option, filename='', value=None, verbosity=None):
         try:
             cfg.get(section, option)
             cfg.set(section, option, value)
-        except configparser.NoSectionError:
+        except ConfigParser.NoSectionError:
             #cfg.add_section(section)
             #cfg.set(section, option, value)
             return "\tNo Section Name: '%s'" %(section)
-        except configparser.NoOptionError:
+        except ConfigParser.NoOptionError:
             return "\tNo Option Name: '%s'" %(option)
         cfg_data = open(filename,'wb')
         cfg.write(cfg_data)   
@@ -235,12 +235,12 @@ def get_config(section, option, filename='', value=None, verbosity=None):
     filename = get_config_file(filename, verbosity)
     try:
         data = read_config(section, option, filename, value)
-    except configparser.NoSectionError:
-        print(traceback.format_exc())
+    except ConfigParser.NoSectionError:
+        print traceback.format_exc()
         write_config(section, option, filename, value)
         data = read_config(section, option, filename, value)
-    except configparser.NoOptionError:
-        print(traceback.format_exc())
+    except ConfigParser.NoOptionError:
+        print traceback.format_exc()
         write_config(section, option, filename, value)
         data = read_config(section, option, filename, value)
     return data
@@ -249,12 +249,12 @@ def get_config2(section, option, filename='', value=None, verbosity=None):
     filename = get_config_file(filename, verbosity)
     try:
         data = read_config2(section, option, filename)
-    except configparser.NoSectionError:
-        print(traceback.format_exc())
+    except ConfigParser.NoSectionError:
+        print traceback.format_exc()
         write_config(section, option, value)
         data = read_config2(section, option, filename)
-    except configparser.NoOptionError:
-        print(traceback.format_exc())
+    except ConfigParser.NoOptionError:
+        print traceback.format_exc()
         write_config(section, option, value)
         data = read_config2(section, option, filename)
     return data
@@ -263,12 +263,12 @@ def get_config3(section, option, filename='', value=None, verbosity=None):
     filename = get_config_file(filename, verbosity)
     try:
         data = read_config3(section, option, filename)
-    except configparser.NoSectionError:
-        print(traceback.format_exc())
+    except ConfigParser.NoSectionError:
+        print traceback.format_exc()
         write_config(section, option, value)
         data = read_config3(section, option, filename)
-    except configparser.NoOptionError:
-        print(traceback.format_exc())
+    except ConfigParser.NoOptionError:
+        print traceback.format_exc()
         write_config(section, option, value)
         data = read_config3(section, option, filename)
     return data
@@ -277,12 +277,12 @@ def get_config4(section, option, filename='', value='', verbosity=None):
     filename = get_config_file(filename, verbosity)
     try:
         data = read_config4(section, option, filename)
-    except configparser.NoSectionError:
+    except ConfigParser.NoSectionError:
         #print "Error 1 =", traceback.format_exc()
         write_config(section, option, value)
         data = read_config4(section, option, filename)
         #print "data 1 =", data
-    except configparser.NoOptionError:
+    except ConfigParser.NoOptionError:
         #print "Error 2 =", traceback.format_exc()
         write_config(section, option, value)
         data = read_config4(section, option, filename)
@@ -294,12 +294,12 @@ def get_config5(section, option, filename='', value=None, verbosity=None):
     filename = get_config_file(filename, verbosity)
     try:
         data = read_config5(section, option, filename)
-    except configparser.NoSectionError:
-        print(traceback.format_exc())
+    except ConfigParser.NoSectionError:
+        print traceback.format_exc()
         write_config(section, option, value)
         data = read_config5(section, option, filename)
-    except configparser.NoOptionError:
-        print(traceback.format_exc())
+    except ConfigParser.NoOptionError:
+        print traceback.format_exc()
         write_config(section, option, value)
         data = read_config5(section, option, filename)
     return data
@@ -308,12 +308,12 @@ def get_config6(section, option, filename='', value=None, verbosity=None):
     filename = get_config_file(filename, verbosity)
     try:
         data = read_config6(section, option, filename)
-    except configparser.NoSectionError:
-        print(traceback.format_exc())
+    except ConfigParser.NoSectionError:
+        print traceback.format_exc()
         write_config(section, option, value)
         data = read_config6(section, option, filename)
-    except configparser.NoOptionError:
-        print(traceback.format_exc())
+    except ConfigParser.NoOptionError:
+        print traceback.format_exc()
         write_config(section, option, value)
         data = read_config6(section, option, filename)
     return data
@@ -365,8 +365,8 @@ def test(verbosity=None):
     filename = get_config_file(verbosity)
     cfg.read(filename)
     data = cfg.sections()
-    print(cfg.get('router','host'))
-    print(data)
+    print cfg.get('router','host')
+    print data
 
 #TEST
 class usage(object):

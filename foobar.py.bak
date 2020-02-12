@@ -55,7 +55,7 @@ class foobarx(control.control):
                 else:
                     foobar.usage()
             else:
-                print("\tWARNING: your are not windows os !\n")
+                print "\tWARNING: your are not windows os !\n"
                 foobar.usage()
         else:
             foobar.usage()

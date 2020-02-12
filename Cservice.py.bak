@@ -86,22 +86,22 @@ class WService:
         self.stat = ws.QueryServiceStatus(self.handle)
         if self.stat[1]==ws.SERVICE_STOPPED:
             if prn == 1:
-                print("The %s service is stopped." % self.lserv)
+                print "The %s service is stopped." % self.lserv
             else:
                 return "STOPPED"
         elif self.stat[1]==ws.SERVICE_START_PENDING:
             if prn == 1:
-                print("The %s service is starting." % self.lserv)
+                print "The %s service is starting." % self.lserv
             else:
                 return "STARTING"
         elif self.stat[1]==ws.SERVICE_STOP_PENDING:
             if prn == 1:
-                print("The %s service is stopping." % self.lserv)
+                print "The %s service is stopping." % self.lserv
             else:
                 return "STOPPING"
         elif self.stat[1]==ws.SERVICE_RUNNING:
             if prn == 1:
-                print("The %s service is running." % self.lserv)
+                print "The %s service is running." % self.lserv
             else:
                 return "RUNNING"
 
@@ -156,20 +156,20 @@ class WService:
     def infotype(self):
         self.stat = ws.QueryServiceStatus(self.handle)
         if self.stat[0] and ws.SERVICE_WIN32_OWN_PROCESS:
-            print("The %s service runs in its own process." % self.lserv)
+            print "The %s service runs in its own process." % self.lserv
         if self.stat[0] and ws.SERVICE_WIN32_SHARE_PROCESS:
-            print("The %s service shares a process with other services." % self.lserv)
+            print "The %s service shares a process with other services." % self.lserv
         if self.stat[0] and ws.SERVICE_INTERACTIVE_PROCESS:
-            print("The %s service can interact with the desktop." % self.lserv)
+            print "The %s service can interact with the desktop." % self.lserv
 
     def infoctrl(self):
         self.stat = ws.QueryServiceStatus(self.handle)
         if self.stat[2] and ws.SERVICE_ACCEPT_PAUSE_CONTINUE:
-            print("The %s service can be paused." % self.lserv)
+            print "The %s service can be paused." % self.lserv
         if self.stat[2] and ws.SERVICE_ACCEPT_STOP:
-            print("The %s service can be stopped."  % self.lserv)
+            print "The %s service can be stopped."  % self.lserv
         if self.stat[2] and ws.SERVICE_ACCEPT_SHUTDOWN:
-            print("The %s service can be shutdown." % self.lserv)
+            print "The %s service can be shutdown." % self.lserv
 
     def infostartup(self):
         self.isuphandle = wa.RegOpenKeyEx(wc.HKEY_LOCAL_MACHINE, self.sccss + self.sserv, 0, wc.KEY_READ)
@@ -209,7 +209,7 @@ class WService:
                 return i[0], i[1]; break
             if i[1].lower() == self.userv.lower():
                 return i[0], i[1]; break
-        print("Error: The %s service doesn't seem to exist." % self.userv)
+        print "Error: The %s service doesn't seem to exist." % self.userv
         return None, None
 
 if __name__ == '__main__':
@@ -218,109 +218,109 @@ if __name__ == '__main__':
         if len(sys.argv) > 1:
             datasvc = WService(sys.argv[1])
             if(sys.argv[2] == 'start'):
-                print("\n")
-                print("\t Current status service " + sys.argv[1] + ": " + datasvc.status())
+                print "\n"
+                print "\t Current status service " + sys.argv[1] + ": " + datasvc.status()
                 datasvc.start()
-                print("\t Status service " + sys.argv[1] + " now : " + datasvc.status())
+                print "\t Status service " + sys.argv[1] + " now : " + datasvc.status()
             elif(sys.argv[2] == 'stop'):
-                print("\n")
-                print("\t Current status service " + sys.argv[1] + ": " + datasvc.status())
+                print "\n"
+                print "\t Current status service " + sys.argv[1] + ": " + datasvc.status()
                 datasvc.stop()
-                print("\t Status service " + sys.argv[1] + " now : " + datasvc.status())
+                print "\t Status service " + sys.argv[1] + " now : " + datasvc.status()
             elif(sys.argv[2] == 'status'):
-                print("\n")
-                print("\t Current status service " + sys.argv[1] + ": " + datasvc.status())
+                print "\n"
+                print "\t Current status service " + sys.argv[1] + ": " + datasvc.status()
             elif(sys.argv[2] == 'restart'):
-                print("\n")
-                print("\t Current status service " + sys.argv[1] + ": " + datasvc.status())
+                print "\n"
+                print "\t Current status service " + sys.argv[1] + ": " + datasvc.status()
                 datasvc.restart()
-                print("\t Status service " + sys.argv[1] + " now : " + datasvc.status())
+                print "\t Status service " + sys.argv[1] + " now : " + datasvc.status()
             elif(sys.argv[2] == 'pause'):
-                print("\n")
-                print("\t Current status service " + sys.argv[1] + ": " + datasvc.status())
+                print "\n"
+                print "\t Current status service " + sys.argv[1] + ": " + datasvc.status()
                 datasvc.pause()
-                print("\t Status service " + sys.argv[1] + " now : " + datasvc.status())
+                print "\t Status service " + sys.argv[1] + " now : " + datasvc.status()
             elif(sys.argv[2] == 'resume'):
-                print("\n")
-                print("\t Current status service " + sys.argv[1] + ": " + datasvc.status())
+                print "\n"
+                print "\t Current status service " + sys.argv[1] + ": " + datasvc.status()
                 datasvc.resume()
-                print("\t Status service " + sys.argv[1] + " now : " + datasvc.status())
+                print "\t Status service " + sys.argv[1] + " now : " + datasvc.status()
             elif(sys.argv[2] == 'getname'):
-                print("\n")
-                print("\t Current status service " + sys.argv[1] + ": " + datasvc.status())
-                print("\t Name Of Service : " + str(datasvc.getname()[0]))
-                print("\t Status service " + sys.argv[1] + " now : " + datasvc.status())
+                print "\n"
+                print "\t Current status service " + sys.argv[1] + ": " + datasvc.status()
+                print "\t Name Of Service : " + str(datasvc.getname()[0])
+                print "\t Status service " + sys.argv[1] + " now : " + datasvc.status()
             elif(sys.argv[2] == 'infotype'):
-                print("\n")
-                print("\t Current status service " + sys.argv[1] + ": " + datasvc.status())
+                print "\n"
+                print "\t Current status service " + sys.argv[1] + ": " + datasvc.status()
                 datasvc.infotype()
-                print("\t Status service " + sys.argv[1] + " now : " + datasvc.status())
+                print "\t Status service " + sys.argv[1] + " now : " + datasvc.status()
             elif(sys.argv[2] == 'infoctrl'):
-                print("\n")
-                print("\t Current status service " + sys.argv[1] + ": " + datasvc.status())
+                print "\n"
+                print "\t Current status service " + sys.argv[1] + ": " + datasvc.status()
                 datasvc.infoctrl()
-                print("\t Status service " + sys.argv[1] + " now : " + datasvc.status())
+                print "\t Status service " + sys.argv[1] + " now : " + datasvc.status()
             elif(sys.argv[2] == 'infostartup'):
-                print("\n")
-                print("\t Current status service " + sys.argv[1] + ": " + datasvc.status())
-                print("\t Status service " + sys.argv[1] + " startup: " + datasvc.infostartup())
-                print("\t Status service " + sys.argv[1] + " now : " + datasvc.status())
+                print "\n"
+                print "\t Current status service " + sys.argv[1] + ": " + datasvc.status()
+                print "\t Status service " + sys.argv[1] + " startup: " + datasvc.infostartup()
+                print "\t Status service " + sys.argv[1] + " now : " + datasvc.status()
             elif(sys.argv[2] == 'setstartup'):
                 try:
                     if(sys.argv[3] != ''):
                         #print 'ARGUMENT[3] = ' + sys.argv[3] + "\n"
                         if(sys.argv[3] == 'Boot' or 'boot'):
-                            print("\n")
-                            print("\t Current status service " + sys.argv[1] + " startup: " + datasvc.infostartup())
+                            print "\n"
+                            print "\t Current status service " + sys.argv[1] + " startup: " + datasvc.infostartup()
                             datasvc.setstartup('boot')
-                            print("\t Status service " + sys.argv[1] + " startup now: " + datasvc.infostartup())
+                            print "\t Status service " + sys.argv[1] + " startup now: " + datasvc.infostartup()
                         elif(sys.argv[3] == 'System' or 'system'):
-                            print("\n")
-                            print("\t Current status service " + sys.argv[1] + " startup: " + datasvc.infostartup())
+                            print "\n"
+                            print "\t Current status service " + sys.argv[1] + " startup: " + datasvc.infostartup()
                             datasvc.setstartup('system')
-                            print("\t Status service " + sys.argv[1] + " startup now: " + datasvc.infostartup())
+                            print "\t Status service " + sys.argv[1] + " startup now: " + datasvc.infostartup()
                         elif(sys.argv[3] == 'Automatic' or 'automatic'):
-                            print("\n")
-                            print("\t Current status service " + sys.argv[1] + " startup: " + datasvc.infostartup())
+                            print "\n"
+                            print "\t Current status service " + sys.argv[1] + " startup: " + datasvc.infostartup()
                             datasvc.setstartup('automatic')
-                            print("\t Status service " + sys.argv[1] + " startup now: " + datasvc.infostartup())
+                            print "\t Status service " + sys.argv[1] + " startup now: " + datasvc.infostartup()
                         elif(sys.argv[3] == 'Manual' or 'manual'):
-                            print("\n")
-                            print("\t Current status service " + sys.argv[1] + " startup: " + datasvc.infostartup())
+                            print "\n"
+                            print "\t Current status service " + sys.argv[1] + " startup: " + datasvc.infostartup()
                             datasvc.setstartup('manual')
-                            print("\t Status service " + sys.argv[1] + " startup now: " + datasvc.infostartup())
+                            print "\t Status service " + sys.argv[1] + " startup now: " + datasvc.infostartup()
                         elif(sys.argv[3] == 'Disabled' or 'disabled' or 'disable'):
-                            print("\n")
-                            print("\t Current status service " + sys.argv[1] + " startup: " + datasvc.infostartup())
+                            print "\n"
+                            print "\t Current status service " + sys.argv[1] + " startup: " + datasvc.infostartup()
                             datasvc.setstartup('disabled')
-                            print("\t Status service " + sys.argv[1] + " startup now: " + datasvc.infostartup())
+                            print "\t Status service " + sys.argv[1] + " startup now: " + datasvc.infostartup()
                         else:
-                            print("\n")
-                            print("\tcode :005\n")
-                            print("\tplease use : " + filename + " setstartup ([S|s]stem | [B|b]oot | [A|a]utomatic | [M|m]aanual | [D|d]isable[d] \n")
+                            print "\n"
+                            print "\tcode :005\n"
+                            print "\tplease use : " + filename + " setstartup ([S|s]stem | [B|b]oot | [A|a]utomatic | [M|m]aanual | [D|d]isable[d] \n"
                     else:
-                        print("\n")
-                        print("\tcode :004\n")
-                        print("\tplease use : " + filename + " setstartup ([S|s]stem | [B|b]oot | [A|a]utomatic | [M|m]anual | [D|d]isable[d] \n")
-                except IndexError as e:
-                    print("\n")
-                    print("\tcode :004\n")
-                    print("\tplease use : " + filename + " setstartup ([S|s]stem | [B|b]oot | [A|a]utomatic | [M|m]anual | [D|d]isable[d] \n")
+                        print "\n"
+                        print "\tcode :004\n"
+                        print "\tplease use : " + filename + " setstartup ([S|s]stem | [B|b]oot | [A|a]utomatic | [M|m]anual | [D|d]isable[d] \n"
+                except IndexError, e:
+                    print "\n"
+                    print "\tcode :004\n"
+                    print "\tplease use : " + filename + " setstartup ([S|s]stem | [B|b]oot | [A|a]utomatic | [M|m]anual | [D|d]isable[d] \n"
             elif(sys.argv[2] == "delete"):
                 try:
                     os.system("sc delete " + sys.argv[1])
-                except NameError as e:
-                    print("\n")
-                    print("\t " + str(e))
+                except NameError, e:
+                    print "\n"
+                    print "\t " + str(e)
             else:
-                print("\n")
-                print("\tcode :002\n")
-                print("\t" + usage)
+                print "\n"
+                print "\tcode :002\n"
+                print "\t" + usage
         else:
-            print("\n")
-            print("\tcode :001\n")
-            print("\t" + usage)
-    except IndexError as e:
-        print("\n")
-        print("\tcode :A1\n")
-        print("\t" + str(e))
+            print "\n"
+            print "\tcode :001\n"
+            print "\t" + usage
+    except IndexError, e:
+        print "\n"
+        print "\tcode :A1\n"
+        print "\t" + str(e)
