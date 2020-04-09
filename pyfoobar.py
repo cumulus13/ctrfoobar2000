@@ -36,7 +36,7 @@ class foobar(object):
     def isPaused(self):
         return playback.IsPaused
 
-    def next(self):
+    def __next__(self):
         playback.Next()
 
     def previous(self):
@@ -105,28 +105,28 @@ class foobar(object):
 
     def info(self):
         try:
-            print "\n"
-            print "\t Track    :", self.getCurrentTrack()
-            print "\t Artist   :", self.getCurrentArtist()
-            print "\t Album    :", self.getCurrentAlbum()
-            print "\t Playlist :", self.currentActivePlaylist()
+            print("\n")
+            print("\t Track    :", self.getCurrentTrack())
+            print("\t Artist   :", self.getCurrentArtist())
+            print("\t Album    :", self.getCurrentAlbum())
+            print("\t Playlist :", self.currentActivePlaylist())
             state_play = self.isPlaying()
             state_pause = self.isPaused()
             if state_play:
-                print "\t State    : Playing"
+                print("\t State    : Playing")
             elif state_pause:
-                print "\t State    : Pause"
+                print("\t State    : Pause")
             else:
-                print "\t State    : Unknown"
+                print("\t State    : Unknown")
 
         except:
-            print "\t Error communication with Foobar2000 COM Server !"
+            print("\t Error communication with Foobar2000 COM Server !")
             
     def check_connection(self, url=None):
-        print "COM: NOT HTTP Control !"
+        print("COM: NOT HTTP Control !")
     
     def usage(self, print_help=None):
-        print "\n"
+        print("\n")
         # try:
         #   c = control(pyfoobar.foobar)
         # except:
@@ -157,8 +157,8 @@ class foobar(object):
                 self.pauseplay()
             elif options.previous:
                 self.previous()
-            elif options.next:
-                self.next()
+            elif options.__next__:
+                next(self)
             elif options.random:
                 self.playRandom()
             elif options.volume:

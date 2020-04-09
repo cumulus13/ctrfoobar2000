@@ -1,10 +1,18 @@
+from __future__ import print_function
 import configset
 import re
 import os
 import sys
 import time
 from bs4 import BeautifulSoup as bs
-import urllib.parse
+if sys.version_info.major == 3:
+    import urllib.parse
+else:
+    class urllib:
+        def parse(self):
+            pass
+    import urlparse
+    urllib.parse = urlparse
 import platform
 # from multiprocessing import ThreatPool
 
@@ -219,7 +227,7 @@ class foobar(object):
         return None
 
     def check_connection(self):
-        import urllib.parse
+        #import urllib.parse
         parse = urllib.parse.urlparse(self.url)
         url = parse.scheme + "://" + parse.netloc
         return c_handle.check_connection(url)
@@ -276,7 +284,7 @@ class foobar(object):
     def isPaused(self):
         return None
 
-    def __next__(self):
+    def next(self):
         data = {'cmd':'StartNext'}
         url = self.setURL(data)
         return c_handle.play(url)
@@ -391,6 +399,9 @@ class foobar(object):
             #print "AAA"
             data4 = data3.split("//")
             #print "data 4=", data4
+            if not len(data4) > 1:
+                print("Foobar2000 is stopped")
+                return None            
             artist = str(data4[-1]).strip()
             data5 = re.split("\[|\]", data4[0])
             albumartist = data5[0]     
@@ -404,9 +415,13 @@ class foobar(object):
             #print "BBB"
             #print "data3 =", data3
             data4 = re.split("\[|\]", data3)
-            #print "data4 =", data4
-            data5 = data4[1].split("CD")
-            #print "data5 =", data5
+            #print ("data4 =", data4)
+            if len(data4) > 1:
+                data5 = data4[1].split("#")
+                #print ("data5 =", data5)
+            else:
+                print("Foobar2000 is stopped")
+                return None
             
             artist = data4[0]
             #print "artist 2 =", artist
@@ -511,6 +526,7 @@ class foobar(object):
         if verbosity:
             print("FOLDER1     ::",folder)
         data = {'param1':folder, 'param2':'EnqueueDir', 'cmd':'Browse'}
+        #print("data [521] =", data)
         url = self.setURL(data)
         return c_handle.play(url)
         
@@ -584,7 +600,9 @@ class foobar(object):
         if verbosity:
             print("FOLDER1::",folder)
         data = {'param1':folder, 'param2':'EnqueueDir', 'cmd':'Browse'}
+        #print("data [595] =", data)
         url = self.setURL(data)
+        #print("url [597] =", url)
         c_handle.play(url)
         #self.close()
         # count = 0

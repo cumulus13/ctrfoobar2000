@@ -1,10 +1,21 @@
+#!C:/SDK/Anaconda2/python.exe
+from __future__ import print_function
 import traceback
-import configset
+from configset import configset# as cfgset
+#configset = cfgset()
 import argparse
 import sys
 import os
 import subprocess
-import urllib.parse
+if sys.version_info.major == 3:
+    import urllib.parse
+else:
+    class urllib:
+        def parse(self):
+            pass
+    import urlparse
+    urllib.parse = urlparse
+    input = raw_input
 import re
 import platform
 import time
@@ -16,15 +27,19 @@ class control(object):
         # self.THIS_PATH = ''
         self.host = host
         self.port = port
-        self.conf = configset.get_config_file('pyfoobar.ini')
-        cfg = configset.cfg
-        cfg.read(self.conf)
+        #self.conf = configset.get_config_file('pyfoobar.ini')
+        self.configname = os.path.join(os.path.dirname(__file__), 'pyfoobar.ini')
+        #configset.configname = self.conf
+        #cfg = configset.cfg
+        cfg = configset(self.configname)
+        #cfg.read(self.conf)
+        #print("dir(cfg) =", dir(cfg))
         self.type_foobar = cfg.options('TYPE')
         self.error = ''
         self.nircmd = r"c:\EXE\nircmd.exe"
         if not os.path.isfile(self.nircmd):
             self.nircmd = r"nircmd.exe"
-        self.ctype = configset.read_config('CONTROL', 'type')
+        self.ctype = cfg.read_config('CONTROL', 'type')
         self.foobar2000 = ''
         # if self.ctype == 'com':
         #     import pyfoobar
@@ -35,7 +50,17 @@ class control(object):
         if not os.getenv('PROCESSOR_ARCHITECTURE') == 'x86':
             self.prog_path = os.getenv('ProgramFiles(x86)')
         else:
-            self.prog_path = os.getenv('ProgramFiles')       
+            self.prog_path = os.getenv('ProgramFiles')
+            
+    def write_config(self, data):
+        if isinstance(data, list):
+            for i in data:
+                if ":" in i:
+                    list_data = re.split(":")
+                    section = list_data[0].strip()
+                    option = list_data[1].strip()
+                    value = list_data[2].strip()
+                    configset.write_config(section, option, value = value)
 
     def getModulePath(self):
         return configset.read_config('MODULE', 'path')
@@ -44,7 +69,7 @@ class control(object):
         #print "self.ctype =", self.ctype
         if self.ctype == 'com':
             #print "COM SET"
-            from . import pyfoobar
+            import pyfoobar
             self.foobar2000 = pyfoobar.foobar()
         elif self.ctype == 'http':
             #print "HTTP SET"
@@ -103,11 +128,12 @@ class control(object):
             self.check_connection()
             print("\t Error communication with Foobar2000 [COM|HTTP] Server !")
 
-    def __next__(self):
+    def next(self):
         self.re_init()
         try:
-            return next(self.foobar2000)
+            return self.foobar2000.next()
         except:
+            traceback.format_exc()
             self.check_connection()
             print("\t Error communication with Foobar2000 [COM|HTTP] Server !")
 
@@ -217,7 +243,7 @@ class control(object):
             os.rmdir(os.path.join(os.getenv('appdata'), 'foobar2000'))
 
     def open(self):
-        from . import module002a
+        import module002a
         data = ''
         del(sys.argv[1])
         if os.getenv('ProgramFiles(x86)') != None:
@@ -266,10 +292,10 @@ class control(object):
             usage(True)
 
     def readConfig(self):
-        f = open(self.conf).read()
+        f = open(self.configname).read()
         print(f)
         print("\n")
-        print(configset.read_all_config(self.conf))
+        print(configset.read_all_config(self.configname))
         print("\n")
 
     def check_connection(self):
@@ -323,9 +349,9 @@ class control(object):
                 #print "PLAY TRACK", q
                 if q == 'x':
                     try:
-                        sys.exit(0)
+                        sys.exit()
                     except:
-                        pass
+                        return None
                 if q[0].lower() == 'p' and len(q) > 1:
                     return self.playlist(q[1])
                 if q == 'Previous' or q == 'First' or q == 'Next' or q == 'Last':
@@ -457,7 +483,7 @@ class control(object):
         return result
         
     def getVersion(self):
-        from . import __version__, __test__
+        import __version__, __test__
         print("\tVersion: " + str(__version__) + "." + str(__test__))
         sys.exit(0)
 
@@ -508,7 +534,8 @@ class control(object):
         parser.add_argument('-o', '--open', help='Just run Foobar2000 [com]', action='store_true')
         parser.add_argument('-q', '--close', help='Just close Foobar2000 [com]', action='store_true')
         parser.add_argument('-S', '--type-controller', help='Set Type Of Controller [com,http]', action='store')
-        parser.add_argument('-x', '--store-config', help='Store Set Type Of Controller [com,http]', action='store_true')
+        parser.add_argument('-x', '--change-config', help='Set Change config. format: section=option', action='store')
+        #parser.add_argument('-x', '--store-config', help='Store Set Type Of Controller [com,http]', action='store_true')
         parser.add_argument('-f', '--addfolder', help='Add Remote Folder Queue [HTTP]', action='store', nargs='*')
         parser.add_argument('-fi', '--addfiles', help='Add Remote Files Queue [HTTP]', action='store', nargs='*')
         parser.add_argument('-F', '--addfolderplay', help='Add Remote Folder Queue & Play it [HTTP]', action='store', nargs='*')
@@ -541,7 +568,7 @@ class control(object):
         args_com.add_argument('-k', '--kill', help='Terminate Foobar2000 running', action='store_true')
         args_com.add_argument('-o', '--open', help='Just run Foobar2000', action='store_true')
         args_com.add_argument('-S', '--type-controller', help='Set Type Of Controller [com,http]', action='store')
-        args_com.add_argument('-x', '--store-config', help='Store Set Type Of Controller [com,http]', action='store_true')
+        args_com.add_argument('-x', '--change-config', help='Store Set Type Of Controller [com,http]', action='store_true')
         args_com.add_argument('-?', '--usage', help='Print All Help', action='store_true')
         args_com.add_argument('-g', '--read-config', help="Read config file", action="store_true")
         args_com.add_argument('-T', '--section', help="Set Section Config", action="store")
@@ -568,11 +595,11 @@ class control(object):
         args_http.add_argument('-l', '--list', help='List Playlist', action='store_true')
         args_http.add_argument('-b', '--browser', help='Browser Library', action='store_true')
         args_http.add_argument('-S', '--type-controller', help='Set Type Of Controller [com,http]', action='store')
-        args_http.add_argument('-x', '--store-config', help='Store Set Type Of Controller [com,http]', action='store_true')
         args_http.add_argument('-H', '--host', help="Remote Host control Address [HTTP]", action='store')
         args_http.add_argument('-O', '--port', help="Remote Port control Address [HTTP]", action='store')
         args_http.add_argument('-?', '--usage', help='Print All Help', action='store_true')
         args_http.add_argument('-g', '--read-config', help="Read config file", action="store_true")
+        args_http.add_argument('-x', '--change-config', help='Set Change config. format: section=option', action='store')
         args_http.add_argument('-T', '--section', help="Set Section Config", action="store")
         args_http.add_argument('-E', '--option', help="Set Option Config", action="store", nargs=2)
         args_http.add_argument('-a', '--dir-alias', help="Root of Directory Alias On Server", action="store")
@@ -615,13 +642,13 @@ class control(object):
                 if options.type_controller:
                     if options.type_controller == 'com' or options.type_controller == 'http':
                         self.ctype = options.type_controller
-                        if options.store_config:
-                            configset.write_config('CONTROL', 'type', self.conf, options.type_controller)
+                        if options.change_config:
+                            self.write_config(options.change_config)
                             if options.host:
                                 configset.write_config('HTTP', 'server', self.conf, options.host)
                             if options.port:
                                 configset.write_config('HTTP', 'port', self.conf, options.port)                         
-                elif options.store_config:
+                elif options.change_config:
                     if options.type_controller:
                         configset.write_config('CONTROL', 'type', self.conf, options.type_controller)
                     if options.host:
@@ -646,7 +673,7 @@ class control(object):
                 elif options.previous:
                     self.previous()
                 elif options.next:
-                    next(self)
+                    self.next()
                 elif options.random:
                     self.random()
                 elif options.volume:
@@ -733,12 +760,13 @@ class control(object):
                     add_folders = []
                     for i in options.addfolderplay:
                         folder = self.format_alias_dir(i, options.dir_alias, options.level_alias, verbosity)
+                        #print("folder [743] =", folder)
                         if len(self.add_resursive_folders(folder)[0]) > 0:
                             add_folders += self.add_resursive_folders(folder)[0]
                             add_folders.insert(0, folder)
                         if len(add_folders) == 0:
                             add_folders.insert(0, i)
-                    # print "add_folders =", add_folders
+                    #print ("add_folders =", add_folders)
                     if add_folders:
                         for i in add_folders:
                             folder = self.format_alias_dir(i, options.dir_alias, options.level_alias, verbosity)
@@ -786,9 +814,9 @@ class control(object):
                 elif options.type_controller:
                     if options.type_controller == 'com' or options.type_controller == 'http':
                         self.ctype = options.type_controller
-                        if options.store_config:
+                        if options.change_config:
                             configset.write_config('CONTROL', 'type', self.conf, options.type_controller)
-                elif options.store_config:
+                elif options.change_config:
                     if options.type_controller:
                         configset.write_config('CONTROL', 'type', self.conf, options.type_controller)
                 if options.type:
