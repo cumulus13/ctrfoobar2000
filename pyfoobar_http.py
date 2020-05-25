@@ -1,5 +1,5 @@
 from __future__ import print_function
-import configset
+from configset import configset as conf
 import re
 import os
 import sys
@@ -17,7 +17,7 @@ import platform
 # from multiprocessing import ThreatPool
 
 CONF_FILE = os.path.join(os.path.dirname(__file__), 'pyfoobar.ini')
-
+configset = conf(CONF_FILE)
 class urlhandle:
     def __init__(self, handle=None):
         self.handle = handle
