@@ -7,13 +7,16 @@ import argparse
 import sys
 import os
 import subprocess
+
 if sys.version_info.major == 3:
     import urllib.parse
+    from urllib.parse import unquote, quote
 else:
     class urllib:
         def parse(self):
             pass
     import urlparse
+    from urllib import unquote, quote
     urllib.parse = urlparse
     input = raw_input
 import re
@@ -81,7 +84,7 @@ class control(object):
         try:
             return self.foobar2000.play()
         except:
-            print(traceback.format_exc_syslog_growl(True))
+            print(traceback.format_exc(True))
             self.check_connection()
             print("\t Error communication with Foobar2000 [COM|HTTP] Server !")
 
@@ -190,7 +193,7 @@ class control(object):
             self.foobar2000.info()
 
         except:
-            #traceback.format_exc_syslog_growl(True)
+            #traceback.format_exc(True)
             print(traceback.format_exc())
             self.check_connection()
             print("\t Error communication with Foobar2000 [COM|HTTP] Server !")
@@ -333,8 +336,11 @@ class control(object):
                     print(str(i + 1) + '.  ' + str(pl[i][0]).encode('UTF-8'))
                     print("-"*len(str(pl[i][0]).encode('UTF-8')))
                 for i in range(9, len(pl) - 1):
-                    print(str(i + 1) +  '. ' + str(pl[i][0]).encode('UTF-8'))
-                    print("-"*len(str(pl[i][0]).encode('UTF-8')))
+                    try:
+                        print(str(i + 1) +  '. ' + str(pl[i][0]).encode('UTF-8'))
+                    except:
+                        print(str(i + 1) +  '. ' + unquote(pl[i][0]))
+                    print("-"*len(unquote(pl[i][0])))
             else:
                 for i in pl:
                     if i:
@@ -364,7 +370,7 @@ class control(object):
                     pass
                 return self.playlist()
         except:
-            print("ERROR =", traceback.format_exc_syslog_growl())
+            print("ERROR =", traceback.format_exc())
             self.check_connection()
             print("\t This only use with Foobar2000 HTTP Server Controller Plugin !")
 
@@ -420,36 +426,66 @@ class control(object):
             print("\t This only use with Foobar2000 HTTP Server Controller Plugin !")
 
     def format_alias_dir(self, path, alias=None, level=0, verbosity=None):
+        root = False
+        if alias:
+            if str(alias).isdigit() or str(alias[:-1]).isdigit():
+                if str(alias[-1]) == ":":
+                    root = True
+                    alias = alias[:-1]
+                if 'linux' in sys.platform:
+                    alias_split = path.split("/")
+                    alias_split = filter(None, alias_split)
+                    
+                else:
+                    alias_split = path.split("\\")
+                    alias_split = filter(None, alias_split)
+                alias = alias_split[abs(int(alias)):]
+                if root:
+                    alias_0 = alias[0]
+                    alias.remove(alias[0])
+                    alias.insert(0, alias_0 + ":")
+                alias = "\\".join(alias)
+            
+        verbosity = False
         if verbosity:
-            print("PATH 0       =", os.path.splitdrive(path))
-        # print "PATH x   =", self.THIS_PATH
-        if path != None:
+            print("PATH 0       =", path)
+            print("PATH 1       =", os.path.splitdrive(path))
+            
+        if path != None and sys.platform == 'win32':
             # if os.path.splitdrive(path)[0] == '':
             path = os.path.abspath(path)
+        
         if verbosity:
             print("DRIVE        =", path)
         if alias == None:
             alias = (os.path.splitdrive(os.path.abspath(path))[0])
+        
         if verbosity:
             print("ALIAS        =", alias)
             print("LEVEL        =", level)
         level = int(level)
-        #print "LEVEL                    =", level
-        #print "PATH 1                   =", path
+        
         if '/' in path or '/' == path[-1]:
             path = str(path).replace('/', '\\')
-        if len(re.findall('[A-Z]:|[a-z]:', path)) == 0:
-            if ":" in alias:
-                path = alias + '\\' + path
-            else:
-                path = alias + ":" + '\\' + path
+        
+        if verbosity:
+            print("PATH        =", path)
+        
+        if sys.platform == 'win32':
+            if len(re.findall('[A-Z]:|[a-z]:', path)) == 0:
+                if ":" in alias:
+                    path = alias + '\\' + path
+                else:
+                    path = alias + ":" + '\\' + path
+        
         path  = str(path).split("\\")
-        #print "PATH 2                   =", path
         path_join = "\\".join(path[level:])
+        
         if verbosity:
             print("PATH_JOIN    =", path_join)
             print("ALIAS        =", alias)
-        if ":" in alias:
+        
+        if ":" in alias and sys.platform == 'win32':
             alias = str(alias).split("\\")
             if "\\" in alias[-1]:
                 alias_join = "\\".join(alias)
@@ -460,18 +496,36 @@ class control(object):
                 if verbosity:
                     print("ALIAS JOIN 2 =", alias_join)
         else:
-            alias = alias[0] + ":" + alias[1:]
-            alias = str(alias).split("\\")
-            if "\\" in alias[-1]:
-                alias_join = "\\".join(alias)
-                if verbosity:
-                    print("ALIAS JOIN 3 =", alias_join)
-            else:
-                alias_join = "\\".join(alias) + '\\'
-                if verbosity:
-                    print("ALIAS JOIN 4 =", alias_join)            
+            if sys.platform == 'win32':
+                alias = alias[0] + ":" + alias[1:]
+                alias = str(alias).split("\\")
+                if "\\" in alias[-1]:
+                    alias_join = "\\".join(alias)
+                    if verbosity:
+                        print("ALIAS JOIN 3 =", alias_join)
+                else:
+                    alias_join = "\\".join(alias) + '\\'
+                    if verbosity:
+                        print("ALIAS JOIN 4 =", alias_join)            
         if platform.uname()[0] == 'Linux':
-            result = alias_join + path_join
+            if verbosity:
+                print("PATH_JOIN LINUX =", path_join)
+            path_join = path_join.replace("\\", "/")
+            if "/" == path_join[-1]:
+                path_join = path_join[:-1]
+            if verbosity:
+                print("PATH_JOIN LINUX =", path_join)
+            base = os.path.basename(path_join)
+            if verbosity:
+                print("BASE LINUX =", base)
+            if alias:
+                path_join = os.path.join(alias, base)
+            if verbosity:
+                print("PATH_JOIN LINUX =", path_join)
+            path_join = path_join.replace("/", "\\")
+            return path_join
+            #result = alias_join + path_join
+            #print("RESULT =", result)
         elif platform.uname()[0] == 'Windows':
             if verbosity:
                 print("PATH_JOIN 2  =", path_join)
@@ -492,7 +546,7 @@ class control(object):
         try:
             return self.foobar2000.repeat(tnum)
         except:
-            print(traceback.format_exc_syslog_growl(True))
+            print(traceback.format_exc())
             self.check_connection()
             print("\t Error communication with Foobar2000 [COM|HTTP] Server !")
 
@@ -755,12 +809,13 @@ class control(object):
                             else:
                                 self.addFolder(folder)
                 if options.addfolderplay:
-                    self.stop()
-                    self.clearPlaylist()
+                    #self.stop()
+                    #self.clearPlaylist()
                     add_folders = []
                     for i in options.addfolderplay:
                         folder = self.format_alias_dir(i, options.dir_alias, options.level_alias, verbosity)
-                        #print("folder [743] =", folder)
+                        #print("folder [778] =", folder)
+                        print("Add Folder to Play:", folder)
                         if len(self.add_resursive_folders(folder)[0]) > 0:
                             add_folders += self.add_resursive_folders(folder)[0]
                             add_folders.insert(0, folder)
@@ -769,7 +824,9 @@ class control(object):
                     #print ("add_folders =", add_folders)
                     if add_folders:
                         for i in add_folders:
+                            #print("i =", i)
                             folder = self.format_alias_dir(i, options.dir_alias, options.level_alias, verbosity)
+                            #print("folder =", folder)
                             if options.version == 2:
                                 self.playFolder(folder, True, False)
                                 time.sleep(len(os.listdir(i)))
@@ -795,7 +852,9 @@ class control(object):
                                 
                     self.play()
                 if options.list:
-                    time.sleep(4)
+                    self.info()
+                    print("\n")
+                    #time.sleep(4)
                     self.playlist()
                 if options.seek:
                     self.seekSecond(options.seek)
