@@ -1,5 +1,6 @@
 #!C:/SDK/Anaconda2/python.exe
 from __future__ import print_function
+from safeprint import print as sprint
 import traceback
 from configset import configset# as cfgset
 #configset = cfgset()
@@ -35,6 +36,7 @@ class control(object):
         #configset.configname = self.conf
         #cfg = configset.cfg
         cfg = configset(self.configname)
+        self.cfg = cfg
         #cfg.read(self.conf)
         #print("dir(cfg) =", dir(cfg))
         self.type_foobar = cfg.options('TYPE')
@@ -59,11 +61,11 @@ class control(object):
         if isinstance(data, list):
             for i in data:
                 if ":" in i:
-                    list_data = re.split(":")
+                    list_data = re.split(":", i)
                     section = list_data[0].strip()
                     option = list_data[1].strip()
                     value = list_data[2].strip()
-                    configset.write_config(section, option, value = value)
+                    self.cfg.write_config(section, option, value)
 
     def getModulePath(self):
         return configset.read_config('MODULE', 'path')
@@ -163,14 +165,6 @@ class control(object):
         except:
             self.check_connection()
             print("\t Error communication with Foobar2000 [COM|HTTP] Server !")
-
-    # def browser(self):
-    #     self.re_init()
-    #     try:
-    #         return self.foobar2000.browser()
-    #     except:
-    #         self.check_connection()
-    #         print "\t This only use with with Foobar2000 HTTP Server Controller Plugin !"
 
     def info(self):
         print("Current Playing : ")
@@ -295,11 +289,9 @@ class control(object):
             usage(True)
 
     def readConfig(self):
-        f = open(self.configname).read()
-        print(f)
-        print("\n")
-        print(configset.read_all_config(self.configname))
-        print("\n")
+        #print("\n")
+        print(self.cfg.read_all_config())
+        #print("\n")
 
     def check_connection(self):
         self.re_init()
@@ -333,8 +325,14 @@ class control(object):
             pl = self.foobar2000.playlist(page)[0:]
             if len(pl) > 9:
                 for i in range(0, 9):
-                    print(str(i + 1) + '.  ' + str(pl[i][0]).encode('UTF-8'))
-                    print("-"*len(str(pl[i][0]).encode('UTF-8')))
+                    try:
+                        print(str(i + 1) + '.  ' + str(pl[i][0]).encode('UTF-8'))
+                    except:
+                        sprint(str(i + 1) + '.  ' + pl[i][0])
+                    try:
+                        print("-"*len(str(pl[i][0]).encode('UTF-8')))
+                    except:
+                        sprint("-"*len(pl[i][0]))
                 for i in range(9, len(pl) - 1):
                     try:
                         print(str(i + 1) +  '. ' + str(pl[i][0]).encode('UTF-8'))
@@ -653,7 +651,7 @@ class control(object):
         args_http.add_argument('-O', '--port', help="Remote Port control Address [HTTP]", action='store')
         args_http.add_argument('-?', '--usage', help='Print All Help', action='store_true')
         args_http.add_argument('-g', '--read-config', help="Read config file", action="store_true")
-        args_http.add_argument('-x', '--change-config', help='Set Change config. format: section=option', action='store')
+        args_http.add_argument('-x', '--change-config', help='Set Change config. format: section=option', action='store', nargs = '*')
         args_http.add_argument('-T', '--section', help="Set Section Config", action="store")
         args_http.add_argument('-E', '--option', help="Set Option Config", action="store", nargs=2)
         args_http.add_argument('-a', '--dir-alias', help="Root of Directory Alias On Server", action="store")
@@ -703,12 +701,13 @@ class control(object):
                             if options.port:
                                 configset.write_config('HTTP', 'port', self.conf, options.port)                         
                 elif options.change_config:
-                    if options.type_controller:
-                        configset.write_config('CONTROL', 'type', self.conf, options.type_controller)
-                    if options.host:
-                        configset.write_config('HTTP', 'server', self.conf, options.host)
-                    if options.port:
-                        configset.write_config('HTTP', 'port', self.conf, options.port)     
+                    #if options.type_controller:
+                        #configset.write_config('CONTROL', 'type', self.conf, options.type_controller)
+                    #if options.host:
+                        #configset.write_config('HTTP', 'server', self.conf, options.host)
+                    #if options.port:
+                        #configset.write_config('HTTP', 'port', self.conf, options.port)
+                    self.write_config(options.change_config)
                 elif options.section:
                     if options.option:
                         print(configset.write_config2(options.section, options.option[0], self.conf, options.option[1]))
@@ -809,8 +808,8 @@ class control(object):
                             else:
                                 self.addFolder(folder)
                 if options.addfolderplay:
-                    #self.stop()
-                    #self.clearPlaylist()
+                    self.stop()
+                    self.clearPlaylist()
                     add_folders = []
                     for i in options.addfolderplay:
                         folder = self.format_alias_dir(i, options.dir_alias, options.level_alias, verbosity)
