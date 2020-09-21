@@ -1,13 +1,19 @@
-#!/usr/bin/python
-import configset
+#!/usr/bin/env python2
+from configset import configset
 import os, sys
+configname = os.path.join(os.path.dirname(__file__), 'pyfoobar.ini')
+config = configset(configname)
 
-MODULE_PATH = configset.read_config('MODULE', 'path')
+MODULE_PATH = config.get_config('MODULE', 'path')
+
+TOOLS_PATH = r'd:\\TOOLS\\pyx'
 
 if sys.platform == 'win32':
-    if os.path.isdir(r'c:/pyx'):
-        sys.path.insert(0, r'c:\\pyx')    
+    if os.path.isdir(TOOLS_PATH):
+        sys.path.insert(0, TOOLS_PATH)    
     import module002a
+if not os.path.isdir(MODULE_PATH):
+    MODULE_PATH = os.path.dirname(os.path.dirname(__file__))
 if not os.path.isdir(MODULE_PATH):
     raise SystemError('Please re-Set module ctrlfoobar2000 !')
 else:
