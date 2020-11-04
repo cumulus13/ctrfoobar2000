@@ -60,11 +60,14 @@ class control(object):
     def write_config(self, data):
         if isinstance(data, list):
             for i in data:
-                if ":" in i:
-                    list_data = re.split(":", i)
+                if "#" in i:
+                    list_data = re.split("#", i)
                     section = list_data[0].strip()
                     option = list_data[1].strip()
                     value = list_data[2].strip()
+                    #print("section =", section)
+                    #print("option  =", option)
+                    #print("value   =", value)
                     self.cfg.write_config(section, option, value)
 
     def getModulePath(self):
@@ -318,7 +321,10 @@ class control(object):
             PAGE = page
         if PAGE:
             page = PAGE
-        pages = self.foobar2000.getPages(page)
+        try:
+            pages = self.foobar2000.getPages(page)
+        except:
+            sys.exit("Connection Error !")
         try:
             # print "self.foobar2000.playlist(page) =", self.foobar2000.playlist(page)
             # print "-"*200
@@ -386,7 +392,8 @@ class control(object):
             except:
                 print("\n")
                 print("\t Error Communication with server !")
-                return SystemExit
+                #return SystemExit
+                return sys.exit()
 
             print("www              =", www)
             print("www[0] / dataurl =", www[0])
@@ -651,7 +658,7 @@ class control(object):
         args_http.add_argument('-O', '--port', help="Remote Port control Address [HTTP]", action='store')
         args_http.add_argument('-?', '--usage', help='Print All Help', action='store_true')
         args_http.add_argument('-g', '--read-config', help="Read config file", action="store_true")
-        args_http.add_argument('-x', '--change-config', help='Set Change config. format: section=option', action='store', nargs = '*')
+        args_http.add_argument('-x', '--change-config', help='Set Change config. format: section#option#value', action='store', nargs = '*')
         args_http.add_argument('-T', '--section', help="Set Section Config", action="store")
         args_http.add_argument('-E', '--option', help="Set Option Config", action="store", nargs=2)
         args_http.add_argument('-a', '--dir-alias', help="Root of Directory Alias On Server", action="store")
@@ -780,7 +787,7 @@ class control(object):
                             i = os.path.abspath(i)
                         # print "i =", i
                         files = self.format_alias_dir(i, options.dir_alias, options.level_alias, verbosity)
-                        # print "files =", files
+                        print("Add file:", files)
                         add_files.append(files)
                     self.addFiles(add_files)
                     self.stop()

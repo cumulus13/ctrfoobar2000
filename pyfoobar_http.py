@@ -213,6 +213,7 @@ class foobar(object):
         self.redata = (self.data.get('url'), self.data.get('port'), self.data.get('cmd'), self.data.get('param1'), self.data.get('param2'))
         self.cdata = configset.read_config('CONTROL', 'type')
         self.url = "http://{0}:{1}/default/?cmd={2}&param1={3}&param2={4}".format(*self.redata)
+        #print("self.url =", self.url)
 
     def setURL(self, data):
         self.data.update(data)
@@ -391,7 +392,10 @@ class foobar(object):
         return None
 
     def info(self):
-        data1 = c_handle.info(self.url).text
+        try:
+            data1 = c_handle.info(self.url).text
+        except requests.ConnectionError:
+            return sys.exit("Connection Error !")
         soup1 = bs(data1, 'lxml')
         data2 = soup1.find(id = 'track_title')
         data3 = str(data2.text).encode('UTF-8')
