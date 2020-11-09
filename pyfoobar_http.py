@@ -217,9 +217,14 @@ class foobar(object):
 
     def setURL(self, data):
         self.data.update(data)
-        redata = (self.data.get('url'), self.data.get('port'), self.data.get('cmd'), self.data.get('param1'), self.data.get('param2'))
+        if self.data.get('param3'):
+            redata = (self.data.get('url'), self.data.get('port'), self.data.get('cmd'), self.data.get('param1'), self.data.get('param2'), self.data.get('param3'))
+        else:
+            redata = (self.data.get('url'), self.data.get('port'), self.data.get('cmd'), self.data.get('param1'), self.data.get('param2'), '')
+        # print("redata =", redata)
         if isinstance(data, dict):
-            url = "http://{0}:{1}/default/?cmd={2}&param1={3}&param2={4}".format(*redata)
+            url = "http://{0}:{1}/default/?cmd={2}&param1={3}&param2={4}&param3={5}".format(*redata)
+            # print("url = ", url)
             return url
         else:
             raise SyntaxError('Invalid data dictionary')
@@ -253,7 +258,7 @@ class foobar(object):
     def seekSecond(self, seeks):
         # print "seeks =", seeks
         if seeks:
-            data = {'cmd':'SeekSecond', 'param1':str(seeks), 'param3':'NoResponse'}
+            data = {'cmd':'Seek', 'param1':str(seeks), 'param3':'NoResponse'}
             url = self.setURL(data)
             return c_handle.play(url)
         return None
@@ -474,23 +479,47 @@ class foobar(object):
             # print "pages =", pages
         return pages
 
-    def playlist(self, page=None):
+    def playlist(self, page=None, ):
+        # print("page =", page)
         # print "self.url =", self.url
+        # print("len(data4) 0 =", len(data4))
+        data4 = []
         URL = self.url
         if page:
-            url_data = {'url':self.host, 'port':self.port, 'cmd':'P', 'param1':str(page), 'param2':''}
+            url_data = {'url':self.host, 'port':self.port, 'cmd':'P', 'param1':str(page), 'param2':'',}
             URL = self.setURL(url_data)
         # print "URL =", URL
-        data1 = c_handle.playlist(URL).text
-        soup1 = bs(data1, 'lxml')
-        data2 = soup1.find(id='pl')
+        
+        while 1:
+            try:
+                data1 = c_handle.playlist(URL).text
+                soup1 = bs(data1, 'lxml')
+                data2 = soup1.find(id='pl')
+                if data2:
+                    break
+            except:
+                pass
+
+        last = soup1.find('form')
+        if last:
+            last = last.find('a', text="Last")
+            if last:
+                last = int(re.split("param1=", last.get('href'))[-1])
+            else:
+                last = 0
+        else:
+            last = 0
+        # print("last =", last)
         #data3 = data2.find_all('tr')
         #print "data3 =", data3
-        data4 = []
+        # data4 = []
         for i in data2.find_all('tr'):
             data4.append(i.td.contents)
             #print "i.td.contents =",i.td.contents
-        return data4
+        data4 = list(filter(None, data4))
+        # print("data4 =", data4)
+        # print("len(data4) =", len(data4))
+        return data4, last
 
     def clearPlaylist(self):
         data = {'cmd':'EmptyPlaylist'}
@@ -535,7 +564,7 @@ class foobar(object):
         return c_handle.play(url)
         
     def playlistCount(self):
-        pl = len(self.playlist()[0:-1])
+        pl, last = len(self.playlist()[0:-1])
         return pl
 
     def addFiles(self, files):
@@ -574,7 +603,7 @@ class foobar(object):
         # return self.play()
 
 
-    def playFolder(self, folder, verbosity=None, clear=True):
+    def playFolder(self, folder, verbosity=None, clear=True, play=True):
         if verbosity:
             print("FOLDER00::",folder)
         if platform.uname()[0] == 'Windows':
@@ -619,7 +648,9 @@ class foobar(object):
         #     else:
         #         break
         # self.stop()
-        return self.play()
+        # print("play =", play)
+        if play:
+            return self.play()
 
     def repeat(self, tnum):
         '''
@@ -637,5 +668,6 @@ class foobar(object):
 
 if __name__ == "__main__":
     c = foobar()
+    c.playlist()
     # c.browser(1)
-    c.getPages()
+    # c.getPages()
