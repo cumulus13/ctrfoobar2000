@@ -865,6 +865,7 @@ class control(object):
                     verbosity = False
                     if options.version == 2:
                         verbosity = True
+                    self.clearPlaylist()
                     self.stop()
                     self.clearPlaylist()
                     add_folders = []
@@ -881,22 +882,25 @@ class control(object):
                     
                     if add_folders:
                         add_folders = list(set(add_folders))
+                    add_folders = sorted(list(filter(lambda k: self.file_listing(k), add_folders)), reverse = True)
                     # print("add_folders =", add_folders)
                     # pause()                    
                     if add_folders:
+                        # print("add_folders[0] =", add_folders[0])
                         self.playFolder(self.format_alias_dir(add_folders[0], options.dir_alias, options.level_alias, verbosity), verbosity, False, True)
                         self.play()
                         all_files = self.file_listing(add_folders[0])
                         # print("all_files =", all_files)
-                        # print("len(all_files) =", len(all_files))
+                        # print("len(all_files) 0 =", len(all_files))
                         # pause()
                         for i in add_folders[1:]:
                             # print("i =", i)
                             file_numbers = self.file_listing(i)
+                            # print("len(file_numbers) =", len(file_numbers))
                             # print("file_listing =", file_numbers)
                             if len(file_numbers) > 0:
                                 folder = self.format_alias_dir(i, options.dir_alias, options.level_alias, verbosity)
-                                
+                                # print("folder =", folder)
                                 self.playFolder(folder, verbosity, False, False)
                                 
                                 all_files += file_numbers
@@ -909,17 +913,17 @@ class control(object):
                                         current_playlist += cp
                                 
                                 # print("playlist =", self.foobar2000.playlist()[0])
-                                # print("len(all_files) =", len(all_files))
-                                # print("len playlist =", len(current_playlist))
+                                # print("len(all_files) 1 =", len(all_files))
+                                # print("len playlist   1 =", len(current_playlist))
                                 # print("LAST =", last)
                                 # pause()
                                 while 1:
-                                    # print("len(all_files) =", len(all_files))
-                                    # print("len playlist =", len(current_playlist))
+                                    # print("len(all_files) 2 =", len(all_files))
+                                    # print("len playlist   2 =", len(current_playlist))
                                     if len(all_files) == len(current_playlist):
                                         break
                                     else:
-                                        time.sleep(1)
+                                        # time.sleep(1)
                                         current_playlist, last = self.foobar2000.playlist()[0:]
                                         # print("last =", last)
                                         # print("len current_playlist 1 =", len(current_playlist))
