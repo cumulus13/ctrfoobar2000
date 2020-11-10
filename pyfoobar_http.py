@@ -25,9 +25,13 @@ class urlhandle:
             self.handle = 'urllib2'
 
         self.module = __import__(handle)
+        self.ALL = ['play', 'playTrack', 'deltrack', 'stop', 'pauseplay', 'isPlaying', 'isPaused', 'isCurrentlyPlaying', 'next', 'previous', 'playRandom', 'seekPosition', 'lengthOfTrack', 'currentVolumeLevel', 'mute', 'setVolumeLevel', 'currentActivePlaylist', 'getCurrentTrack', 'getCurrentArtist', 'getCurrentAlbum', 'info', 'playlist', 'browser', 'repeat']
+
+        for i in self.ALL:
+            setattr(self, i, self.module1)
 
     def isPlaying(self):
-        return None
+        return self.info(print_info=False)
 
     def check_connection(self, url):
         if self.handle == 'requests':
@@ -47,150 +51,11 @@ class urlhandle:
         get = self.module.get(url)
         return get.close()
 
-    def play(self, url):
-        #print "url =", url
+    def module1(self, url):
         if self.handle == 'requests':
             return self.module.get(url)
         else:
             return self.module.urlopen(url)
-
-    def playTrack(self, url):
-        # print "url =", url
-        if self.handle == 'requests':
-            return self.module.get(url)
-        else:
-            return self.module.urlopen(url)
-        
-    def deltrack(self, url):
-        if self.handle == 'requests':
-            return self.module.get(url)
-        else:
-            return self.module.urlopen(url)    
-
-    def stop(self, url):
-        if self.handle == 'requests':
-            return self.module.get(url)
-        else:
-            return self.module.urlopen(url)
-
-    def pauseplay(self, url):
-        if self.handle == 'requests':
-            return self.module.get(url)
-        else:
-            return self.module.urlopen(url)
-
-    def isPaused(self, url):
-        if self.handle == 'requests':
-            return self.module.get(url)
-        else:
-            return self.module.urlopen(url)
-
-    def next(self, url):
-        if self.handle == 'requests':
-            return self.module.get(url)
-        else:
-            return self.module.urlopen(url)
-
-    def previous(self, url):
-        if self.handle == 'requests':
-            return self.module.get(url)
-        else:
-            return self.module.urlopen(url)
-
-    def playRandom(self, url):
-        if self.handle == 'requests':
-            return self.module.get(url)
-        else:
-            return self.module.urlopen(url)
-
-    def seekPosition(self, url):
-        if self.handle == 'requests':
-            return self.module.get(url)
-        else:
-            return self.module.urlopen(url)
-
-    def lengthOfTrack(self, url):
-        if self.handle == 'requests':
-            return self.module.get(url)
-        else:
-            return self.module.urlopen(url)
-
-    def currentVolumeLevel(self, url):
-        if self.handle == 'requests':
-            return self.module.get(url)
-        else:
-            return self.module.urlopen(url)
-
-    def mute(self, url):
-        if self.handle == 'requests':
-            return self.module.get(url)
-        else:
-            return self.module.urlopen(url)
-
-    def setVolumeLevel(self, url):
-        if self.handle == 'requests':
-            return self.module.get(url)
-        else:
-            return self.module.urlopen(url)
-
-    def currentActivePlaylist(self, url):
-        if self.handle == 'requests':
-            return self.module.get(url)
-        else:
-            return self.module.urlopen(url)
-
-    def getCurrentTrack(self, url):
-        if self.handle == 'requests':
-            return self.module.get(url)
-        else:
-            return self.module.urlopen(url)
-
-
-    def getCurrentArtist(self, url):
-        if self.handle == 'requests':
-            return self.module.get(url)
-        else:
-            return self.module.urlopen(url)
-
-
-    def getCurrentAlbum(self, url):
-        if self.handle == 'requests':
-            return self.module.get(url)
-        else:
-            return self.module.urlopen(url)
-
-
-    def isCurrentlyPlaying(self, url):
-        if self.handle == 'requests':
-            return self.module.get(url)
-        else:
-            return self.module.urlopen(url)
-
-    def info(self, url):
-        if self.handle == 'requests':
-            return self.module.get(url)
-        else:
-            return self.module.urlopen(url)
-
-    def playlist(self, url):
-        if self.handle == 'requests':
-            return self.module.get(url)
-        else:
-            return self.module.urlopen(url)
-
-    def browser(self, url):
-        if self.handle == 'requests':
-            #print "URL =", url
-            return self.module.get(url)
-        else:
-            return self.module.urlopen(url)
-
-    def repeat(self, url):
-        if self.handle == 'requests':
-            return self.module.get(url)
-        else:
-            return self.module.urlopen(url)
-
 try:
     import requests
     c_handle = urlhandle('requests')
@@ -216,12 +81,13 @@ class foobar(object):
         #print("self.url =", self.url)
 
     def setURL(self, data):
+        print("data   =", data)
         self.data.update(data)
         if self.data.get('param3'):
             redata = (self.data.get('url'), self.data.get('port'), self.data.get('cmd'), self.data.get('param1'), self.data.get('param2'), self.data.get('param3'))
         else:
             redata = (self.data.get('url'), self.data.get('port'), self.data.get('cmd'), self.data.get('param1'), self.data.get('param2'), '')
-        # print("redata =", redata)
+        print("redata =", redata)
         if isinstance(data, dict):
             url = "http://{0}:{1}/default/?cmd={2}&param1={3}&param2={4}&param3={5}".format(*redata)
             # print("url = ", url)
@@ -241,8 +107,11 @@ class foobar(object):
     def close(self):
         c_handle.close(self.url)
 
-    def play(self):
-        data = {'cmd':'Start'}
+    def play(self, data = None):
+        if not data:
+            data = {'cmd':'Start'}
+        else:
+            data.update({'cmd':'Start'})
         url = self.setURL(data)
         return c_handle.play(url)
 
@@ -277,13 +146,21 @@ class foobar(object):
             url = self.setURL(data)
             return c_handle.deltrack(url)
 
-    def stop(self):
-        data = {'cmd':'Stop'}
+    def stop(self, data = None):
+        if data:
+            data.update({'cmd':'Stop'})
+        else:
+            data = {'cmd':'Stop'}
         url = self.setURL(data)
         return c_handle.play(url)
 
-    def pauseplay(self):
-        data = {'cmd':'PlayOrPause'}
+    def pauseplay(self, data = None):
+        
+        if not data:
+            data = {'cmd':'PlayOrPause'}
+        else:
+            data.update({'cmd':'PlayOrPause'})
+        
         url = self.setURL(data)
         return c_handle.play(url)
 
@@ -332,11 +209,6 @@ class foobar(object):
             b = a.get('href')
             data_urlx.update({data5.index(a):b})
             
-
-        #print "url X           1 =", url
-        #print "list_url_suffix 1 =", data_urlx
-        #print "list_file/dir   1 =", data4
-        #print "-"*120
         return data_urlx, data4, url
 
     def browser(self, num_suffix=None, direct_path=None, url=None):
@@ -396,7 +268,12 @@ class foobar(object):
     def isCurrentlyPlaying(self):
         return None
 
-    def info(self):
+    def info(self, data = None, print_info=True):
+        if data:
+            self.data.update(data)
+            self.redata = (self.data.get('url'), self.data.get('port'), self.data.get('cmd'), self.data.get('param1'), self.data.get('param2'))
+            self.url = "http://{0}:{1}/default/?cmd={2}&param1={3}&param2={4}".format(*self.redata)
+
         try:
             data1 = c_handle.info(self.url).text
         except requests.ConnectionError:
@@ -443,20 +320,28 @@ class foobar(object):
             cd = "CD" + data5[1][0]
             #print "cd    =", cd
 
-        #print "-" * 120
-        print("Artist          :", artist) #unicode(artist).encode('UTF-8')
-        print("Song            :", song.strip())
-        print("Track           :", track)
-        print("CD              :", cd)
-        print("Album           :", album)
-        print("Album Artist    :", albumartist)
+        if print_info:
+            print("Artist          :", artist) #unicode(artist).encode('UTF-8')
+            print("Song            :", song.strip())
+            print("Track           :", track)
+            print("CD              :", cd)
+            print("Album           :", album)
+            print("Album Artist    :", albumartist)
+        return artist, song.strip(), track, cd, album, albumartist
 
-    def getPages(self, page=None):
-        # print "self.urlopen =", self.url
-        URL = self.url
+    def getPages(self, page=None, data = {}):
+        if data:
+            data.update({'cmd':'P', 'param1':'', 'param2':'',})
+            # print("data 2 =", data)
+        else:
+            data = {'cmd':'P', 'param1':'', 'param2':'',}
+        data4 = []
+        
         if page:
-            url_data = {'url':self.host, 'port':self.port, 'cmd':'P', 'param1':str(page), 'param2':''}
-            URL = self.setURL(url_data)
+            data.update({'param1':str(page)})
+        # print("data 3 =", data)
+        URL = self.setURL(data)
+        # print ("URL =", URL)
         # print 'URL =', URL
         url_parse = urllib.parse.urlparse(URL)
         # print "url_parse =", url_parse
@@ -479,16 +364,18 @@ class foobar(object):
             # print "pages =", pages
         return pages
 
-    def playlist(self, page=None, ):
-        # print("page =", page)
-        # print "self.url =", self.url
-        # print("len(data4) 0 =", len(data4))
+    def playlist(self, page=None, data = None):
+        if data:
+            data.update({'cmd':'P', 'param1':'', 'param2':'',})
+        else:
+            data = {'cmd':'P', 'param1':'', 'param2':'',}
         data4 = []
-        URL = self.url
+        
         if page:
-            url_data = {'url':self.host, 'port':self.port, 'cmd':'P', 'param1':str(page), 'param2':'',}
-            URL = self.setURL(url_data)
-        # print "URL =", URL
+            data.update({'param1':str(page)})
+            
+        URL = self.setURL(data)
+        # print ("URL =", URL)
         
         while 1:
             try:
@@ -559,7 +446,6 @@ class foobar(object):
         if verbosity:
             print("FOLDER1     ::",folder)
         data = {'param1':folder, 'param2':'EnqueueDir', 'cmd':'Browse'}
-        #print("data [521] =", data)
         url = self.setURL(data)
         return c_handle.play(url)
         
@@ -599,11 +485,9 @@ class foobar(object):
             data = {'param1':files, 'cmd':'Browse'}
             url = self.setURL(data)
             c_handle.play(url)
-        
-        # return self.play()
 
 
-    def playFolder(self, folder, verbosity=None, clear=True, play=True):
+    def playFolder(self, folder, verbosity=None, clear=True, play=True, host = None, port = None):
         if verbosity:
             print("FOLDER00::",folder)
         if platform.uname()[0] == 'Windows':
@@ -633,22 +517,14 @@ class foobar(object):
         if verbosity:
             print("FOLDER1::",folder)
         data = {'param1':folder, 'param2':'EnqueueDir', 'cmd':'Browse'}
-        #print("data [595] =", data)
+        if host:
+            data.update({'host':host})
+        if port:
+            data.update({'port':port})
+
         url = self.setURL(data)
-        #print("url [597] =", url)
         c_handle.play(url)
-        #self.close()
-        # count = 0
-        # while 1:
-        #     if self.playlistCount() == 0:
-        #         time.sleep(1)
-        #         count += 1
-        #         if count == 50:
-        #             break
-        #     else:
-        #         break
-        # self.stop()
-        # print("play =", play)
+        
         if play:
             return self.play()
 
