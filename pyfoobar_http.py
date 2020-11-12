@@ -81,13 +81,13 @@ class foobar(object):
         #print("self.url =", self.url)
 
     def setURL(self, data):
-        print("data   =", data)
+        # print("data   =", data)
         self.data.update(data)
         if self.data.get('param3'):
             redata = (self.data.get('url'), self.data.get('port'), self.data.get('cmd'), self.data.get('param1'), self.data.get('param2'), self.data.get('param3'))
         else:
             redata = (self.data.get('url'), self.data.get('port'), self.data.get('cmd'), self.data.get('param1'), self.data.get('param2'), '')
-        print("redata =", redata)
+        # print("redata =", redata)
         if isinstance(data, dict):
             url = "http://{0}:{1}/default/?cmd={2}&param1={3}&param2={4}&param3={5}".format(*redata)
             # print("url = ", url)

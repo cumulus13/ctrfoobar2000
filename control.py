@@ -219,8 +219,10 @@ class control(object):
         return self.foobar2000.addFiles(files)
 
     def playFolder(self, folder, verbosity=None, clear=True, play=True, host = None, port = None):
-        print("HOST:", host)
-        print("PORT:", port)
+        if host:
+            print("HOST:", host)
+        if port:
+            print("PORT:", port)
         self.re_init()
         return self.foobar2000.playFolder(folder, verbosity, clear, play, host, port)
 
@@ -601,6 +603,26 @@ class control(object):
                 list_files.append(os.path.join(folder, i))
         return list_files
 
+    def check_playlist(self, all_files, current_playlist):
+        while 1:
+            # print("len(all_files) 2 =", len(all_files))
+            # print("len playlist   2 =", len(current_playlist))
+            if len(all_files) == len(current_playlist):
+                break
+            else:
+                # time.sleep(1)
+                current_playlist, last = self.foobar2000.playlist()[0:]
+                # print("last =", last)
+                # print("len current_playlist 1 =", len(current_playlist))
+                if last > 0:
+                    current_playlist = []
+                    for p in range(1, last+1):
+                        cp, last = self.foobar2000.playlist(p)[0:]
+                        # print("len(cp) =", len(cp))
+                        current_playlist += cp
+                # print("len current_playlist 2 =", len(current_playlist))
+        return True
+
     def usage(self, print_help=None):
         print("\n")
         parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
@@ -956,8 +978,15 @@ class control(object):
                     if add_folders:
                         # print("add_folders[0] =", add_folders[0])
                         self.playFolder(self.format_alias_dir(add_folders[0], options.dir_alias, options.level_alias, verbosity), verbosity, False, True, options.host, options.port)
-                        self.play()
                         all_files = self.file_listing(add_folders[0])
+                        STATUS = self.foobar2000.info(print_info=False)
+                        if not STATUS:
+                            STATUS = 'Stoped'
+                        print("STATUS:", STATUS)
+                        if not STATUS or STATUS == None or STATUS == "None" or STATUS == 'Stoped':    
+                            if self.check_playlist(all_files, self.foobar2000.playlist()[0:][0]):
+                                self.play()
+                        
                         # print("all_files =", all_files)
                         # print("len(all_files) 0 =", len(all_files))
                         # pause()
@@ -985,23 +1014,8 @@ class control(object):
                                 # print("len playlist   1 =", len(current_playlist))
                                 # print("LAST =", last)
                                 # pause()
-                                while 1:
-                                    # print("len(all_files) 2 =", len(all_files))
-                                    # print("len playlist   2 =", len(current_playlist))
-                                    if len(all_files) == len(current_playlist):
-                                        break
-                                    else:
-                                        # time.sleep(1)
-                                        current_playlist, last = self.foobar2000.playlist()[0:]
-                                        # print("last =", last)
-                                        # print("len current_playlist 1 =", len(current_playlist))
-                                        if last > 0:
-                                            current_playlist = []
-                                            for p in range(1, last+1):
-                                                cp, last = self.foobar2000.playlist(p)[0:]
-                                                # print("len(cp) =", len(cp))
-                                                current_playlist += cp
-                                        # print("len current_playlist 2 =", len(current_playlist))
+                                self.check_playlist(all_files, current_playlist)
+
                             # pause()
                         
                     else:
@@ -1040,10 +1054,13 @@ class control(object):
                             self.play()
                     verbosity = False
                     STATUS = self.foobar2000.info(print_info=False)
+                    if not STATUS:
+                        STATUS = 'Stoped'
                     print("STATUS:", STATUS)
-                    if not STATUS or STATUS == None or STATUS == "None":
-                        print("Play ...")
-                        self.play()
+                    if not STATUS or STATUS == None or STATUS == "None" or STATUS == 'Stoped':
+                        if self.check_playlist(all_files, self.foobar2000.playlist()[0:][0]):
+                            print("Play ...")
+                            self.play()
 
                 if options.list:
                     self.info()
