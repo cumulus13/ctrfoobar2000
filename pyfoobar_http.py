@@ -280,7 +280,7 @@ class foobar(object):
             return sys.exit("Connection Error !")
         soup1 = bs(data1, 'lxml')
         data2 = soup1.find(id = 'track_title')
-        data3 = str(data2.text).encode('UTF-8')
+        data3 = data2.text.encode('UTF-8')
         if "//" in data3:
             #print "AAA"
             data4 = data3.split("//")
