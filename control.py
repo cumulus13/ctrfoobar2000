@@ -362,7 +362,7 @@ class control(object):
             else:
                 for i in pl:
                     if i:
-                        print(str(pl.index(i) + 1) + ".", str(i[0]).encode('UTF-8'))
+                        sprint(str(pl.index(i) + 1) + ".", i[0].encode('utf-8'))
                         print("-"*len(str(i[0]).encode('UTF-8')))
             print("\n")
             if pages:
@@ -845,7 +845,14 @@ class control(object):
                         add_files.append(files)
                     self.addFiles(add_files)
                     self.stop()
-                    self.play()
+                    STATUS = self.foobar2000.info(print_info=False)
+                    if not STATUS:
+                        STATUS = 'Stoped'
+                    print("STATUS:", STATUS)
+                    if not STATUS or STATUS == None or STATUS == "None" or STATUS == 'Stoped':
+                        if self.check_playlist(all_files, self.foobar2000.playlist()[0:][0]):
+                            print("Play ...")
+                            self.play()
                 
                 if options.addfolder:
                     verbosity = False
