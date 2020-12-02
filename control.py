@@ -968,7 +968,6 @@ class control(object):
                     add_folders = []
                     for i in options.addfolderplay:
                         folder = self.format_alias_dir(i, options.dir_alias, options.level_alias, verbosity)
-                        #print("folder [778] =", folder)
                         print("Add Folder to Play:", folder)
                         # print("self.add_resursive_folders(folder)=", self.add_resursive_folders(folder))
                         if len(self.add_resursive_folders(folder)[0]) > 0:
@@ -979,13 +978,13 @@ class control(object):
                     
                     if add_folders:
                         add_folders = list(set(add_folders))
+
                     add_folders = sorted(list(filter(lambda k: self.file_listing(k), add_folders)), reverse = True)
-                    # print("add_folders =", add_folders)
-                    # pause()                    
                     if add_folders:
                         # print("add_folders[0] =", add_folders[0])
                         self.playFolder(self.format_alias_dir(add_folders[0], options.dir_alias, options.level_alias, verbosity), verbosity, False, True, options.host, options.port)
-                        all_files = self.file_listing(add_folders[0])
+                        all_files = self.file_listing(self.format_alias_dir(add_folders[0], options.dir_alias, options.level_alias, verbosity))
+                        time.sleep(2)
                         STATUS = self.foobar2000.info(print_info=False)
                         if not STATUS:
                             STATUS = 'Stoped'
@@ -994,14 +993,9 @@ class control(object):
                             if self.check_playlist(all_files, self.foobar2000.playlist()[0:][0]):
                                 self.play()
                         
-                        # print("all_files =", all_files)
-                        # print("len(all_files) 0 =", len(all_files))
-                        # pause()
                         for i in add_folders[1:]:
                             # print("i =", i)
                             file_numbers = self.file_listing(i)
-                            # print("len(file_numbers) =", len(file_numbers))
-                            # print("file_listing =", file_numbers)
                             if len(file_numbers) > 0:
                                 folder = self.format_alias_dir(i, options.dir_alias, options.level_alias, verbosity)
                                 # print("folder =", folder)
@@ -1022,9 +1016,7 @@ class control(object):
                                 # print("LAST =", last)
                                 # pause()
                                 self.check_playlist(all_files, current_playlist)
-
-                            # pause()
-                        
+    
                     else:
                         all_files = []
                         for i in options.addfolderplay:
@@ -1060,6 +1052,7 @@ class control(object):
                         if len(options.addfolderplay) == 1:
                             self.play()
                     verbosity = False
+                    time.sleep(2)
                     STATUS = self.foobar2000.info(print_info=False)
                     if not STATUS:
                         STATUS = 'Stoped'

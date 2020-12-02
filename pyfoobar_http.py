@@ -468,6 +468,8 @@ class foobar(object):
                 i = str(i).replace(')', '%29')
 
                 data = {'param1':i, 'cmd':'Browse'}
+                time.sleep(1)
+                # print("data =", data)
                 url = self.setURL(data)
                 c_handle.play(url)
         else:
