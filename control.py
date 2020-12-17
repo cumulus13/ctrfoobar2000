@@ -61,6 +61,7 @@ class control(object):
         self.host = host
         self.port = port
         self.configname = os.path.join(os.path.dirname(__file__), 'pyfoobar.ini')
+        
         cfg = configset(self.configname)
         self.cfg = cfg
         
@@ -850,7 +851,7 @@ class control(object):
                         STATUS = 'Stoped'
                     print("STATUS:", STATUS)
                     if not STATUS or STATUS == None or STATUS == "None" or STATUS == 'Stoped':
-                        if self.check_playlist(all_files, self.foobar2000.playlist()[0:][0]):
+                        if self.check_playlist(add_files, self.foobar2000.playlist()[0:][0]):
                             print("Play ...")
                             self.play()
                 
@@ -1074,7 +1075,18 @@ class control(object):
                 if options.read_config:
                     self.readConfig()
                 if options.del_track:
-                    self.deltrack(options.del_track)
+                    all_tracks = []
+                    for i in options.del_track:
+                        if "," in i:
+                            all_tracks += i.split(",")
+                        elif "-" in i:
+                            fr, to = i.split("-")
+                            if fr and to:
+                                all_tracks += list(range(int(fr.strip()), int(to.strip()) + 1))
+                        else:
+                            all_tracks.append(i)
+
+                    self.deltrack(all_tracks)
                 
 
             elif self.ctype == 'com':

@@ -133,14 +133,18 @@ class foobar(object):
         return None
     
     def deltrack(self, track):
+        track = [str(int(i) - 1) for i in track]
+        track = list(filter(lambda k: int(k) > -1, track))
         if isinstance(track, list):
-            sys.stdout.write("del track = ")
-            for i in track:
-                data = {'cmd':'Del', 'param1':str(int(i) - 1)}
-                url = self.setURL(data)
-                sys.stdout.write(str(int(i)) + ", ")
-                # return c_handle.deltrack(url)                
-                c_handle.deltrack(url)
+            sys.stdout.write("deleting track = " + ",".join(track) + " ...")
+            # for i in track:
+            # data = {'cmd':'Del', 'param1':str(int(i) - 1)}
+            data = {'cmd':'Del', 'param1':",".join(track)}
+            url = self.setURL(data)
+            # sys.stdout.write(str(int(i)) + ", ")
+            # return c_handle.deltrack(url)                
+            c_handle.deltrack(url)
+            # time.sleep(1)
         else:
             data = {'cmd':'Del', 'param1':str(track)}
             url = self.setURL(data)
