@@ -1,5 +1,6 @@
 from __future__ import print_function
 from configset import configset as conf
+from make_colors import make_colors
 import re
 import os
 import sys
@@ -272,7 +273,7 @@ class foobar(object):
     def isCurrentlyPlaying(self):
         return None
 
-    def info(self, data = None, print_info=True):
+    def info(self, data = None, print_info=True, slim = False):
         if data:
             self.data.update(data)
             self.redata = (self.data.get('url'), self.data.get('port'), self.data.get('cmd'), self.data.get('param1'), self.data.get('param2'))
@@ -290,7 +291,7 @@ class foobar(object):
             data4 = data3.split("//")
             #print "data 4=", data4
             if not len(data4) > 1:
-                print("Foobar2000 is stopped")
+                print(make_colors("Foobar2000 is stopped !", 'lw', 'r'))
                 return None            
             artist = str(data4[-1]).strip()
             data5 = re.split("\[|\]", data4[0])
@@ -310,7 +311,7 @@ class foobar(object):
                 data5 = data4[1].split("#")
                 #print ("data5 =", data5)
             else:
-                print("Foobar2000 is stopped")
+                print(make_colors("Foobar2000 is stopped !", 'lw', 'r'))
                 return None
             
             artist = data4[0]
@@ -324,13 +325,15 @@ class foobar(object):
             cd = "CD" + data5[1][0]
             #print "cd    =", cd
 
-        if print_info:
-            print("Artist          :", artist) #unicode(artist).encode('UTF-8')
-            print("Song            :", song.strip())
-            print("Track           :", track)
-            print("CD              :", cd)
-            print("Album           :", album)
-            print("Album Artist    :", albumartist)
+        if print_info and not slim:
+            print(make_colors("Artist          :", 'lc'), make_colors(artist, 'b', 'lc')) #unicode(artist).encode('UTF-8')
+            print(make_colors("Song            :", 'ly'), make_colors(song.strip(), 'lw', 'lr'))
+            print(make_colors("Track           :", 'lm'), make_colors(str(track), 'lw', 'm'))
+            print(make_colors("CD              :", 'lm'), make_colors(cd, 'lw', 'm'))
+            print(make_colors("Album           :", 'lr'), make_colors(album, 'b', 'y'))
+            print(make_colors("Album Artist    :", 'lg'), make_colors(albumartist, 'b', 'lg'))
+        elif print_info and slim:
+            print("\t " + make_colors("Current Playing:", 'lw', 'bl') + " " + make_colors(str(track), 'lc') + "/" + make_colors(str(cd), 'bl') + ". " + make_colors(song.strip(), 'lw', 'r') + "/" + make_colors(album, 'lw', 'm') + "/" + make_colors(albumartist, 'b', 'lg') + " - " + make_colors(artist, 'lc'))
         return artist, song.strip(), track, cd, album, albumartist
 
     def getPages(self, page=None, data = {}):
@@ -350,7 +353,7 @@ class foobar(object):
         url_parse = urllib.parse.urlparse(URL)
         # print "url_parse =", url_parse
         data1 = c_handle.playlist(URL).text
-        # print "data1 =", data1
+        # print("data1 =", data1)
         soup1 = bs(data1, 'lxml')
         data2 = soup1.find_all('p')
         # print "data2 =", data2

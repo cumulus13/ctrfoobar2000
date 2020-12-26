@@ -1,6 +1,7 @@
 #!C:/SDK/Anaconda2/python.exe
 from __future__ import print_function
 from safeprint import print as sprint
+from make_colors import make_colors
 import traceback
 from configset import configset# as cfgset
 #configset = cfgset()
@@ -191,11 +192,12 @@ class control(object):
             self.check_connection()
             print("\t Error communication with Foobar2000 [COM|HTTP] Server !")
 
-    def info(self):
-        print("Current Playing : ")
+    def info(self, slim = False):
+        if not slim:
+            print("Current Playing : ")
         self.re_init()
         try:
-            self.foobar2000.info(self.DATA)
+            self.foobar2000.info(self.DATA, slim = slim)
 
         except:
             #traceback.format_exc(True)
@@ -326,6 +328,26 @@ class control(object):
         # print pages_print
         return pages_print
 
+    def format_number(self, number, length=99):
+        return ("0" * (len(str(length)) - len(str(number)))) + str(number)
+
+    def format_playlist(self, text="Blue Night [Blue Night CD01 #07] She's Leaving Home // Andy Timmons Band"):
+        #Blue Night [Blue Night CD01 #07] She's Leaving Home // Andy Timmons Band
+        title = re.findall("\] (.*?) //", text)
+        # print("title =", title)
+        album = re.findall("\[(.*?) CD", text)
+        # print("album =", album)
+        album_artist = re.findall("^(.*?) \[", text)
+        # print("album_artist =", album_artist)
+        cd = re.findall("\[.*?(CD\d+) .*?\]", text)
+        # print("cd    =", cd)
+        track = re.findall("(#\d+)", text)
+        # print("track =", track)
+        artist = re.findall("// (.*?)$", text)
+        # print("artist=", artist)
+
+        return make_colors(title[0], 'lw', 'r') + " - " + make_colors(artist[0], 'lw', 'bl') + " [" + make_colors(track[0], 'b', 'y') + "/" + make_colors(cd[0], 'lw', 'm') + ". " + make_colors(album[0], 'b', 'lg') + "] // " + make_colors(album_artist[0], 'b', 'lc')
+
     def playlist(self, page=None):
         self.re_init()
         global PAGE
@@ -347,30 +369,33 @@ class control(object):
             if len(pl) > 9:
                 for i in range(0, 9):
                     try:
-                        print(str(i + 1) + '.  ' + str(pl[i][0]).encode('UTF-8'))
+                        print(self.format_number(str(i + 1), len(pl)) + '. ' + self.format_playlist(str(pl[i][0]).encode('UTF-8')) + "\n")
                     except:
-                        sprint(str(i + 1) + '.  ' + pl[i][0])
+                        sprint(self.format_number(str(i + 1), len(pl)) + '. ' + self.format_playlist(pl[i][0]) + "\n")
+                    # try:
+                    #     print("-"*len(str(pl[i][0]).encode('UTF-8')))
+                    # except:
+                    #     sprint("-"*len(pl[i][0]))
+                for i in range(9, len(pl)):
                     try:
-                        print("-"*len(str(pl[i][0]).encode('UTF-8')))
+                        print(self.format_number(str(i + 1), len(pl)) +  '. ' + self.format_playlist(str(pl[i][0]).encode('UTF-8')) + "\n")
                     except:
-                        sprint("-"*len(pl[i][0]))
-                for i in range(9, len(pl) - 1):
-                    try:
-                        print(str(i + 1) +  '. ' + str(pl[i][0]).encode('UTF-8'))
-                    except:
-                        print(str(i + 1) +  '. ' + unquote(pl[i][0]))
-                    print("-"*len(unquote(pl[i][0])))
+                        print(self.format_number(str(i + 1), len(pl)) +  '. ' + self.format_playlist(unquote(pl[i][0])) + "\n")
+                    # print("-"*len(unquote(pl[i][0])))
             else:
                 for i in pl:
                     if i:
-                        sprint(str(pl.index(i) + 1) + ".", i[0].encode('utf-8'))
-                        print("-"*len(str(i[0]).encode('UTF-8')))
+                        sprint(self.format_number(str(pl.index(i) + 1), len(pl)) + ". ", self.format_playlist(i[0].encode('utf-8')) + "\n")
+                        # print("-"*len(str(i[0]).encode('UTF-8')))
+            self.info(slim=True)
+            # print("pages =", pages)
             print("\n")
             if pages:
                 print("\t PAGE:", self.printPages(pages))
                 print("\n")
-            q = input("\t Do you want to play Track No [x = exit, p[number] = page number]: ")
-            if q != '':
+            q = input("\t " + make_colors("Do you want to play Track No ", 'lw', 'bl') + "[" + make_colors("x = exit", 'lw', 'r') + ", " + make_colors("p[number] = page number", 'b', 'y') + "]: ")
+            print("\n")
+            if q:
                 #print "PLAY TRACK", q
                 if q == 'x':
                     try:
@@ -380,8 +405,15 @@ class control(object):
                 if q[0].lower() == 'p' and len(q) > 1:
                     return self.playlist(q[1])
                 if q == 'Previous' or q == 'First' or q == 'Next' or q == 'Last':
-                    page_number = re.findall("param1=.*?$", pages.get(q))[0].split('param1=')[1]
-                    return self.playlist(page_number)
+                    try:
+                        page_number = re.findall("param1=.*?$", pages.get(q))[0].split('param1=')[1]
+                        return self.playlist(page_number)
+                    except:
+                        tp, vl, tr = sys.exc_info()
+                        if vl.__class__.__name__ == 'TypeError':
+                            pass
+                        else:
+                            traceback.format_exc()
                 try:
                     self.playTrack(str(int(q) - 1), page)
                     return self.playlist()
@@ -864,7 +896,7 @@ class control(object):
                     for i in options.addfolder:
                         folder = self.format_alias_dir(i, options.dir_alias, options.level_alias, verbosity)
                         #print("folder [778] =", folder)
-                        print("Add Folder to Play:", folder)
+                        print(make_colors("Add Folder to Play:", 'b', 'y'), make_colors(folder, 'lw', 'bl'))
                         # print("self.add_resursive_folders(folder)=", self.add_resursive_folders(folder))
                         if len(self.add_resursive_folders(folder)[0]) > 0:
                             add_folders += self.add_resursive_folders(folder)[0]
@@ -969,7 +1001,7 @@ class control(object):
                     add_folders = []
                     for i in options.addfolderplay:
                         folder = self.format_alias_dir(i, options.dir_alias, options.level_alias, verbosity)
-                        print("Add Folder to Play:", folder)
+                        print(make_colors("Add Folder to Play:", 'b', 'y'), make_colors(folder, 'lw', 'bl'))
                         # print("self.add_resursive_folders(folder)=", self.add_resursive_folders(folder))
                         if len(self.add_resursive_folders(folder)[0]) > 0:
                             add_folders += self.add_resursive_folders(folder)[0]
@@ -989,7 +1021,7 @@ class control(object):
                         STATUS = self.foobar2000.info(print_info=False)
                         if not STATUS:
                             STATUS = 'Stoped'
-                        print("STATUS:", STATUS)
+                        print(make_colors("STATUS:", 'lw', 'bl'), make_colors(STATUS, 'lw', 'lr'))
                         if not STATUS or STATUS == None or STATUS == "None" or STATUS == 'Stoped':    
                             if self.check_playlist(all_files, self.foobar2000.playlist()[0:][0]):
                                 self.play()
@@ -1057,7 +1089,7 @@ class control(object):
                     STATUS = self.foobar2000.info(print_info=False)
                     if not STATUS:
                         STATUS = 'Stoped'
-                    print("STATUS:", STATUS)
+                    print(make_colors("STATUS:", 'lw', 'bl'), make_colors(STATUS, 'lw', 'lr'))
                     if not STATUS or STATUS == None or STATUS == "None" or STATUS == 'Stoped':
                         if self.check_playlist(all_files, self.foobar2000.playlist()[0:][0]):
                             print("Play ...")
@@ -1068,6 +1100,7 @@ class control(object):
                     print("\n")
                     #time.sleep(4)
                     self.playlist()
+                    # print("\n")
                 if options.seek:
                     self.seekSecond(options.seek)
                 if options.usage:
@@ -1155,3 +1188,4 @@ class control(object):
 if __name__ == "__main__":
     c = control()
     c.usage()
+    # c.format_playlist()
