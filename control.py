@@ -9,6 +9,7 @@ import argparse
 import sys
 import os
 import subprocess
+from pydebugger.debug import debug
 
 if sys.version_info.major == 3:
     import urllib.parse
@@ -483,115 +484,61 @@ class control(object):
             print("\t This only use with Foobar2000 HTTP Server Controller Plugin !")
 
     def format_alias_dir(self, path, alias=None, level=0, verbosity=None):
-        root = False
-        if alias:
-            if str(alias).isdigit() or str(alias[:-1]).isdigit():
-                if str(alias[-1]) == ":":
-                    root = True
-                    alias = alias[:-1]
-                if 'linux' in sys.platform:
-                    alias_split = path.split("/")
-                    alias_split = filter(None, alias_split)
-                    
-                else:
-                    alias_split = path.split("\\")
-                    alias_split = filter(None, alias_split)
-                alias = alias_split[abs(int(alias)):]
-                if root:
-                    alias_0 = alias[0]
-                    alias.remove(alias[0])
-                    alias.insert(0, alias_0 + ":")
-                alias = "\\".join(alias)
-            
-        verbosity = False
-        if verbosity:
-            print("PATH 0       =", path)
-            print("PATH 1       =", os.path.splitdrive(path))
-            
-        if path != None and sys.platform == 'win32':
-            # if os.path.splitdrive(path)[0] == '':
-            path = os.path.abspath(path)
-        
-        if verbosity:
-            print("DRIVE        =", path)
-        if alias == None:
-            alias = (os.path.splitdrive(os.path.abspath(path))[0])
-        
-        if verbosity:
-            print("ALIAS        =", alias)
-            print("LEVEL        =", level)
-        level = int(level)
-        
-        if '/' in path or '/' == path[-1]:
-            path = str(path).replace('/', '\\')
-        
-        if verbosity:
-            print("PATH        =", path)
-        
-        if sys.platform == 'win32':
-            if len(re.findall('[A-Z]:|[a-z]:', path)) == 0:
-                if ":" in alias:
-                    path = alias + '\\' + path
-                else:
-                    path = alias + ":" + '\\' + path
-        
-        path  = str(path).split("\\")
-        path_join = "\\".join(path[level:])
-        
-        if verbosity:
-            print("PATH_JOIN    =", path_join)
-            print("ALIAS        =", alias)
-        
-        if ":" in alias and sys.platform == 'win32':
-            alias = str(alias).split("\\")
-            if "\\" in alias[-1]:
-                alias_join = "\\".join(alias)
-                if verbosity:
-                    print("ALIAS JOIN 1 =", alias_join)
+        drive = ''
+        if not level and alias:
+            level = re.findall("\d+", alias)
+            if level:
+                level = level[0]
+                debug(level = level)
+                alias = list(filter(None, re.split(level, alias)))
+                debug(alias = alias)
             else:
-                alias_join = "\\".join(alias) + '\\'
-                if verbosity:
-                    print("ALIAS JOIN 2 =", alias_join)
-        else:
-            if sys.platform == 'win32':
-                alias = alias[0] + ":" + alias[1:]
-                alias = str(alias).split("\\")
-                if "\\" in alias[-1]:
-                    alias_join = "\\".join(alias)
-                    if verbosity:
-                        print("ALIAS JOIN 3 =", alias_join)
-                else:
-                    alias_join = "\\".join(alias) + '\\'
-                    if verbosity:
-                        print("ALIAS JOIN 4 =", alias_join)            
-        if platform.uname()[0] == 'Linux':
-            if verbosity:
-                print("PATH_JOIN LINUX =", path_join)
-            path_join = path_join.replace("\\", "/")
-            if "/" == path_join[-1]:
-                path_join = path_join[:-1]
-            if verbosity:
-                print("PATH_JOIN LINUX =", path_join)
-            base = os.path.basename(path_join)
-            if verbosity:
-                print("BASE LINUX =", base)
-            if alias:
-                path_join = os.path.join(alias, base)
-            if verbosity:
-                print("PATH_JOIN LINUX =", path_join)
-            path_join = path_join.replace("/", "\\")
-            return path_join
-            #result = alias_join + path_join
-            #print("RESULT =", result)
-        elif platform.uname()[0] == 'Windows':
-            if verbosity:
-                print("PATH_JOIN 2  =", path_join)
-                print("ALIAS JOIN 5 =", alias_join)
-            result = os.path.join(alias_join, os.path.splitdrive(path_join)[1])
+                level = 0
+        debug(alias = alias)
+        debug(level = level)
         
-        if verbosity:
-            print("RESULT      ::",result)
-        return result
+        if alias and level:
+            if isinstance(alias, list):
+                drive = alias[0]
+            else:
+                drive = alias
+            if 'linux' in sys.platform:
+                alias_split = path.split("/")
+                alias_split = filter(None, alias_split)
+                
+            else:
+                alias_split = path.split("\\")
+                alias_split = filter(None, alias_split)
+            alias = alias_split[abs(int(level)):]
+            debug(alias = alias)
+            alias.insert(0, drive)
+
+            alias = "\\".join(alias)
+
+            debug(alias = alias)
+        elif not alias and level:
+            if 'linux' in sys.platform:
+                alias_split = path.split("/")
+                alias_split = filter(None, alias_split)
+                
+            else:
+                alias_split = path.split("\\")
+                alias_split = filter(None, alias_split)
+            alias = alias_split[abs(int(level)):]
+            debug(alias = alias)
+            alias = "\\".join(alias)
+            debug(alias = alias)
+        else:
+            debug(path = path)
+            if path[0] == "/":
+                path = path[1:]
+            debug(path = path)
+            alias = re.sub("/", "\\\\", path)
+            debug(alias = alias)
+        verbosity = False
+        debug(alias = alias)
+        
+        return alias
         
     def getVersion(self):
         import __version__, __test__
