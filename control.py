@@ -333,7 +333,10 @@ class control(object):
 
     def format_playlist(self, text="Blue Night [Blue Night CD01 #07] She's Leaving Home // Andy Timmons Band"):
         #Blue Night [Blue Night CD01 #07] She's Leaving Home // Andy Timmons Band
+        # print("text:", text)
         title = re.findall("\] (.*?) //", text)
+        if not title:
+            title = re.findall("\] (.*?)$", text)
         # print("title =", title)
         album = re.findall("\[(.*?) CD", text)
         # print("album =", album)
@@ -344,6 +347,8 @@ class control(object):
         track = re.findall("(#\d+)", text)
         # print("track =", track)
         artist = re.findall("// (.*?)$", text)
+        if not artist:
+            artist = re.findall("^(.*?)\[", text)
         # print("artist=", artist)
 
         return make_colors(title[0], 'lw', 'r') + " - " + make_colors(artist[0], 'lw', 'bl') + " [" + make_colors(track[0], 'b', 'y') + "/" + make_colors(cd[0], 'lw', 'm') + ". " + make_colors(album[0], 'b', 'lg') + "] // " + make_colors(album_artist[0], 'b', 'lc')
@@ -874,18 +879,19 @@ class control(object):
                             i = os.path.abspath(i)
                         # print "i =", i
                         files = self.format_alias_dir(i, options.dir_alias, options.level_alias, verbosity)
-                        print("Add file:", files)
+                        print(make_colors("Add file:", 'lw', 'g') + " ", make_colors(files, 'lw', 'bl'))
                         add_files.append(files)
                     self.addFiles(add_files)
                     self.stop()
                     STATUS = self.foobar2000.info(print_info=False)
                     if not STATUS:
                         STATUS = 'Stoped'
-                    print("STATUS:", STATUS)
+                    print(make_colors("STATUS:", 'lw', 'm'), make_colors(STATUS, 'lw', 'c'))
                     if not STATUS or STATUS == None or STATUS == "None" or STATUS == 'Stoped':
-                        if self.check_playlist(add_files, self.foobar2000.playlist()[0:][0]):
-                            print("Play ...")
-                            self.play()
+                        self.play()
+                        # if self.check_playlist(add_files, self.foobar2000.playlist()[0:][0]):
+                        #     print("Play ...")
+                        #     self.play()
                 
                 if options.addfolder:
                     verbosity = False
@@ -1021,6 +1027,8 @@ class control(object):
                         STATUS = self.foobar2000.info(print_info=False)
                         if not STATUS:
                             STATUS = 'Stoped'
+                        if isinstance(STATUS, list):
+                            STATUS = " ".join(STATUS)
                         print(make_colors("STATUS:", 'lw', 'bl'), make_colors(STATUS, 'lw', 'lr'))
                         if not STATUS or STATUS == None or STATUS == "None" or STATUS == 'Stoped':    
                             if self.check_playlist(all_files, self.foobar2000.playlist()[0:][0]):
@@ -1089,6 +1097,8 @@ class control(object):
                     STATUS = self.foobar2000.info(print_info=False)
                     if not STATUS:
                         STATUS = 'Stoped'
+                    if isinstance(STATUS, list):
+                        STATUS = " ".join(STATUS)
                     print(make_colors("STATUS:", 'lw', 'bl'), make_colors(STATUS, 'lw', 'lr'))
                     if not STATUS or STATUS == None or STATUS == "None" or STATUS == 'Stoped':
                         if self.check_playlist(all_files, self.foobar2000.playlist()[0:][0]):
