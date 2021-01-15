@@ -1,4 +1,4 @@
-#!C:/SDK/Anaconda2/python.exe
+#!/usr/bin/env python2
 from __future__ import print_function
 from safeprint import print as sprint
 from make_colors import make_colors
@@ -199,12 +199,11 @@ class control(object):
         self.re_init()
         try:
             self.foobar2000.info(self.DATA, slim = slim)
-
         except:
             #traceback.format_exc(True)
-            print(traceback.format_exc())
+            traceback.format_exc()
             self.check_connection()
-            print("\t Error communication with Foobar2000 [COM|HTTP] Server !")
+            print("\t " + make_colors("Error communication with Foobar2000 [COM|HTTP] Server !", 'lw', 'r'))
 
     def clearPlaylist(self):
         self.re_init()
@@ -314,7 +313,7 @@ class control(object):
     def check_connection(self):
         self.re_init()
         if self.foobar2000.check_connection() != True:
-            print("\t Please re-config config file for server and host or use option -H and option -O [HTTP]")
+            print("\t " + make_colors("Please re-config config file for server and host or use option -H and option -O [HTTP]", 'lw', 'r'))
             print("\n")          
         return self.foobar2000.check_connection()
 
@@ -344,9 +343,13 @@ class control(object):
         album_artist = re.findall("^(.*?) \[", text)
         # print("album_artist =", album_artist)
         cd = re.findall("\[.*?(CD\d+) .*?\]", text)
+        if not cd:
+            cd = ["CD1"]
         # print("cd    =", cd)
         track = re.findall("(#\d+)", text)
         # print("track =", track)
+        if not track:
+            track = ["#0"]
         artist = re.findall("// (.*?)$", text)
         if not artist:
             artist = re.findall("^(.*?)\[", text)
@@ -1003,7 +1006,7 @@ class control(object):
                                 # print("len playlist   1 =", len(current_playlist))
                                 # print("LAST =", last)
                                 # pause()
-                                self.check_playlist(all_files, current_playlist)
+                                self.check_playlist(all_files, playlist = current_playlist)
     
                     else:
                         all_files = []
@@ -1021,7 +1024,7 @@ class control(object):
                             if last > 0:
                                 current_playlist = []
                                 for p in range(1, last+1):
-                                    cp, last = self.foobar2000.playlist(p, current_playlist)[0:]
+                                    cp, last = self.foobar2000.playlist(p, playlist = current_playlist)[0:]
                                     current_playlist += cp
                             while 1:
                                 # print("len(all_files) =", len(all_files))
@@ -1031,11 +1034,14 @@ class control(object):
                                 else:
                                     time.sleep(1)
                                     current_playlist, last = self.foobar2000.playlist()[0:]
+                                    # debug(current_playlist = current_playlist, debug = True)
                                     if last > 0:
                                         current_playlist = []
                                         for p in range(1, last+1):
-                                            cp, last = self.foobar2000.playlist(p, current_playlist)[0:]
+                                            # debug(current_playlist = current_playlist, debug = True)
+                                            cp, last = self.foobar2000.playlist(p, playlist = current_playlist)[0:]
                                             current_playlist += cp
+                                        break
                     
                         if len(options.addfolderplay) == 1:
                             self.play()

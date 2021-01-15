@@ -282,7 +282,9 @@ class foobar(object):
         try:
             data1 = c_handle.info(self.url).text
         except requests.ConnectionError:
-            return sys.exit("Connection Error !")
+            print(make_colors("Connection Error !", 'lw', 'r'))
+            sys.exit()
+
         soup1 = bs(data1, 'lxml')
         data2 = soup1.find(id = 'track_title')
         data3 = data2.text.encode('UTF-8')
@@ -371,7 +373,8 @@ class foobar(object):
             # print "pages =", pages
         return pages
 
-    def playlist(self, page=None, data = None):
+    def playlist(self, page=None, data = None, playlist = None):
+        data4 = playlist
         if data:
             data.update({'cmd':'P', 'param1':'', 'param2':'',})
         else:
