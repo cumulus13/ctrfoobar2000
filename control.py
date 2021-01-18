@@ -339,6 +339,8 @@ class control(object):
             title = re.findall("\] (.*?)$", text)
         # print("title =", title)
         album = re.findall("\[(.*?) CD", text)
+        if not album:
+            album = ['']
         # print("album =", album)
         album_artist = re.findall("^(.*?) \[", text)
         # print("album_artist =", album_artist)
@@ -519,6 +521,29 @@ class control(object):
             alias = "\\".join(alias)
 
             debug(alias = alias)
+        elif alias and not level:
+            debug(alias = alias)
+            if isinstance(alias, list):
+                drive = alias[0]
+            else:
+                drive = alias
+            if 'linux' in sys.platform:
+                alias_split = path.split("/")
+                alias_split = filter(None, alias_split)
+                
+            else:
+                alias_split = path.split("\\")
+                alias_split = filter(None, alias_split)
+            alias = alias_split
+            debug(path = path)
+            debug(drive = drive)
+            debug(alias = alias)
+            alias.insert(0, drive)
+
+            alias = "\\".join(alias)
+
+            debug(alias = alias)
+            # sys.exit()
         elif not alias and level:
             if 'linux' in sys.platform:
                 alias_split = path.split("/")
