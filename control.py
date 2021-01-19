@@ -976,7 +976,7 @@ class control(object):
                     verbosity = False
                     if options.version == 2:
                         verbosity = True
-                    self.clearPlaylist()
+                    # self.clearPlaylist()
                     self.stop()
                     self.clearPlaylist()
                     add_folders = []
@@ -1005,9 +1005,9 @@ class control(object):
                         if isinstance(STATUS, list):
                             STATUS = " ".join(STATUS)
                         print(make_colors("STATUS:", 'lw', 'bl'), make_colors(STATUS, 'lw', 'lr'))
-                        if not STATUS or STATUS == None or STATUS == "None" or STATUS == 'Stoped':    
-                            if self.check_playlist(all_files, self.foobar2000.playlist()[0:][0]):
-                                self.play()
+                        # if not STATUS or STATUS == None or STATUS == "None" or STATUS == 'Stoped':    
+                        #     if self.check_playlist(all_files, self.foobar2000.playlist()[0:][0]):
+                        #         self.play()
                         
                         for i in add_folders[1:]:
                             # print("i =", i)
