@@ -15,6 +15,7 @@ else:
     import urlparse
     urllib.parse = urlparse
 import platform
+from pydebugger.debug import debug
 # from multiprocessing import ThreatPool
 
 CONF_FILE = os.path.join(os.path.dirname(__file__), 'pyfoobar.ini')
@@ -287,6 +288,9 @@ class foobar(object):
 
         soup1 = bs(data1, 'lxml')
         data2 = soup1.find(id = 'track_title')
+        # debug(data2 = data2, debug = True)
+        if not data2:
+            return '', '', '', '', '', ''
         data3 = data2.text.encode('UTF-8')
         if "//" in data3:
             #print "AAA"

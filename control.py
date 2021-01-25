@@ -877,7 +877,7 @@ class control(object):
                     for i in options.addfolder:
                         folder = self.format_alias_dir(i, options.dir_alias, options.level_alias, verbosity)
                         #print("folder [778] =", folder)
-                        print(make_colors("Add Folder to Play:", 'b', 'y'), make_colors(folder, 'lw', 'bl'))
+                        print(make_colors("Add Folder:", 'b', 'y'), make_colors(folder, 'lw', 'bl'))
                         # print("self.add_resursive_folders(folder)=", self.add_resursive_folders(folder))
                         if len(self.add_resursive_folders(folder)[0]) > 0:
                             add_folders += self.add_resursive_folders(folder)[0]
@@ -1051,22 +1051,34 @@ class control(object):
                                 for p in range(1, last+1):
                                     cp, last = self.foobar2000.playlist(p, playlist = current_playlist)[0:]
                                     current_playlist += cp
-                            while 1:
-                                # print("len(all_files) =", len(all_files))
-                                # print("len playlist =", len(current_playlist))
-                                if len(all_files) == len(self.foobar2000.playlist()[0:][0]):
-                                    break
-                                else:
-                                    time.sleep(1)
-                                    current_playlist, last = self.foobar2000.playlist()[0:]
-                                    # debug(current_playlist = current_playlist, debug = True)
-                                    if last > 0:
-                                        current_playlist = []
-                                        for p in range(1, last+1):
-                                            # debug(current_playlist = current_playlist, debug = True)
-                                            cp, last = self.foobar2000.playlist(p, playlist = current_playlist)[0:]
-                                            current_playlist += cp
+                            debug(current_playlist = current_playlist, debug = True)
+                            error = False
+                            if len(current_playlist) > 0:
+                                nt = 1
+                                while 1:
+                                    # print("len(all_files) =", len(all_files))
+                                    # print("len playlist =", len(current_playlist))
+                                    if len(all_files) == len(self.foobar2000.playlist()[0:][0]):
                                         break
+                                    else:
+                                        time.sleep(1)
+                                        if nt == 60:
+                                            print(make_colors("Take to long !", 'lw', 'r') + ", " + make_colors("Please Add folder again !", 'y'))
+                                            error = True
+                                            break
+                                        else:
+                                            nt += 1
+                                        current_playlist, last = self.foobar2000.playlist()[0:]
+                                        # debug(current_playlist = current_playlist, debug = True)
+                                        if last > 0:
+                                            current_playlist = []
+                                            for p in range(1, last+1):
+                                                # debug(current_playlist = current_playlist, debug = True)
+                                                cp, last = self.foobar2000.playlist(p, playlist = current_playlist)[0:]
+                                                current_playlist += cp
+                                            break
+                            if error:
+                                sys.exit()
                     
                         if len(options.addfolderplay) == 1:
                             self.play()
