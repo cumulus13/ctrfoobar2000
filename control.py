@@ -798,8 +798,12 @@ class control(object):
                     self.pause()
                 elif options.previous:
                     self.previous()
+                    time.sleep(1)
+                    data = self.info()
                 elif options.next:
                     self.next()
+                    time.sleep(1)
+                    data = self.info()
                 elif options.random:
                     self.random()
                 elif options.volume:
@@ -875,7 +879,7 @@ class control(object):
                     
                     add_folders = []
                     for i in options.addfolder:
-                        folder = self.format_alias_dir(i, options.dir_alias, options.level_alias, verbosity)
+                        folder = self.format_alias_dir(os.path.realpath(i), options.dir_alias, options.level_alias, verbosity)
                         #print("folder [778] =", folder)
                         print(make_colors("Add Folder:", 'b', 'y'), make_colors(folder, 'lw', 'bl'))
                         # print("self.add_resursive_folders(folder)=", self.add_resursive_folders(folder))
@@ -1043,47 +1047,47 @@ class control(object):
                             if options.version == 2:
                                 verbosity = True
                             self.playFolder(folder, verbosity, False, False, options.host, options.port)
-                            if len(options.addfolderplay) > 0:
-                                self.play()
+                            # if len(options.addfolderplay) > 0:
+                            #     self.play()
                             current_playlist, last = self.foobar2000.playlist()[0:]
                             if last > 0:
                                 current_playlist = []
                                 for p in range(1, last+1):
                                     cp, last = self.foobar2000.playlist(p, playlist = current_playlist)[0:]
                                     current_playlist += cp
-                            debug(current_playlist = current_playlist, debug = True)
+                            debug(current_playlist = current_playlist)
                             error = False
-                            if len(current_playlist) > 0:
-                                nt = 1
-                                while 1:
-                                    # print("len(all_files) =", len(all_files))
-                                    # print("len playlist =", len(current_playlist))
-                                    if len(all_files) == len(self.foobar2000.playlist()[0:][0]):
+                            # if len(current_playlist) > 0:
+                            nt = 1
+                            while 1:
+                                # print("len(all_files) =", len(all_files))
+                                # print("len playlist =", len(current_playlist))
+                                if len(all_files) == len(self.foobar2000.playlist()[0:][0]):
+                                    break
+                                else:
+                                    time.sleep(1)
+                                    if nt == 60:
+                                        print(make_colors("Take to long !", 'lw', 'r') + ", " + make_colors("Please Add folder again !", 'y'))
+                                        error = True
                                         break
                                     else:
-                                        time.sleep(1)
-                                        if nt == 60:
-                                            print(make_colors("Take to long !", 'lw', 'r') + ", " + make_colors("Please Add folder again !", 'y'))
-                                            error = True
-                                            break
-                                        else:
-                                            nt += 1
-                                        current_playlist, last = self.foobar2000.playlist()[0:]
-                                        # debug(current_playlist = current_playlist, debug = True)
-                                        if last > 0:
-                                            current_playlist = []
-                                            for p in range(1, last+1):
-                                                # debug(current_playlist = current_playlist, debug = True)
-                                                cp, last = self.foobar2000.playlist(p, playlist = current_playlist)[0:]
-                                                current_playlist += cp
-                                            break
+                                        nt += 1
+                                    current_playlist, last = self.foobar2000.playlist()[0:]
+                                    # debug(current_playlist = current_playlist, debug = True)
+                                    if last > 0:
+                                        current_playlist = []
+                                        for p in range(1, last+1):
+                                            # debug(current_playlist = current_playlist, debug = True)
+                                            cp, last = self.foobar2000.playlist(p, playlist = current_playlist)[0:]
+                                            current_playlist += cp
+                                        break
                             if error:
                                 sys.exit()
                     
                         if len(options.addfolderplay) == 1:
                             self.play()
                     verbosity = False
-                    time.sleep(2)
+                    # time.sleep(2)
                     STATUS = self.foobar2000.info(print_info=False)
                     if not STATUS:
                         STATUS = 'Stoped'
@@ -1093,7 +1097,7 @@ class control(object):
                     if not STATUS or STATUS == None or STATUS == "None" or STATUS == 'Stoped':
                         if self.check_playlist(all_files, self.foobar2000.playlist()[0:][0]):
                             print("Play ...")
-                            self.play()
+                            # self.play()
 
                 if options.list:
                     self.info()
