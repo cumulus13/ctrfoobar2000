@@ -333,6 +333,12 @@ class control(object):
 
     def format_playlist(self, text="Blue Night [Blue Night CD01 #07] She's Leaving Home // Andy Timmons Band"):
         #Blue Night [Blue Night CD01 #07] She's Leaving Home // Andy Timmons Band
+        title = ''
+        artist = ''
+        track = ''
+        cd = ''
+        album = ''
+        album_artist = ''
         # print("text:", text)
         title = re.findall("\] (.*?) //", text)
         if not title:
@@ -356,8 +362,32 @@ class control(object):
         if not artist:
             artist = re.findall("^(.*?)\[", text)
         # print("artist=", artist)
+        if title:
+            title = title[0]
+        if not title:
+            title = re.findall("\d+\.(.*?)|\d+ \.(.*?)|\d+\-(.*?)|\d+ \-(.*?)$", text)
+            if title:
+                title = list(filter(None, title[0]))
+                if title:
+                    title = title[0].strip()
+        if artist:
+            artist = artist[0]
+        if track:
+            track = track[0]
+        if not track:
+            track = re.findall("(\d+)\.|(\d+) \.|(\d+)\-|(\d+) \-", text)
+            if track:
+                track = list(filter(None, track[0]))
+                if track:
+                    track = track[0].strip()
+        if cd:
+            cd = cd[0]
+        if album:
+            album = album[0]
+        if album_artist:
+            album_artist = album_artist[0]
 
-        return make_colors(title[0], 'lw', 'r') + " - " + make_colors(artist[0], 'lw', 'bl') + " [" + make_colors(track[0], 'b', 'y') + "/" + make_colors(cd[0], 'lw', 'm') + ". " + make_colors(album[0], 'b', 'lg') + "] // " + make_colors(album_artist[0], 'b', 'lc')
+        return make_colors(title, 'lw', 'r') + " - " + make_colors(artist, 'lw', 'bl') + " [" + make_colors(track, 'b', 'y') + "/" + make_colors(cd, 'lw', 'm') + ". " + make_colors(album, 'b', 'lg') + "] // " + make_colors(album_artist, 'b', 'lc')
 
     def playlist(self, page=None):
         self.re_init()
@@ -986,50 +1016,64 @@ class control(object):
                     add_folders = []
                     for i in options.addfolderplay:
                         folder = self.format_alias_dir(i, options.dir_alias, options.level_alias, verbosity)
+                        debug(folder = folder)
                         print(make_colors("Add Folder to Play:", 'b', 'y'), make_colors(folder, 'lw', 'bl'))
                         # print("self.add_resursive_folders(folder)=", self.add_resursive_folders(folder))
+                        debug(len_self_add_resursive_folders_0 = len(self.add_resursive_folders(folder)[0]))
                         if len(self.add_resursive_folders(folder)[0]) > 0:
                             add_folders += self.add_resursive_folders(folder)[0]
+                            debug(add_folders = add_folders)
                             add_folders.insert(0, folder)
+                            debug(add_folders = add_folders)
                         if len(options.addfolderplay) == 1:
                             add_folders.insert(0, folder)
+                            debug(add_folders = add_folders)
                     
                     if add_folders:
                         add_folders = list(set(add_folders))
+                        debug(add_folders = add_folders)
 
                     add_folders = sorted(list(filter(lambda k: self.file_listing(k), add_folders)), reverse = True)
+                    debug(add_folders = add_folders)
                     if add_folders:
                         # print("add_folders[0] =", add_folders[0])
                         self.playFolder(self.format_alias_dir(add_folders[0], options.dir_alias, options.level_alias, verbosity), verbosity, False, True, options.host, options.port)
                         all_files = self.file_listing(self.format_alias_dir(add_folders[0], options.dir_alias, options.level_alias, verbosity))
+                        debug(all_files = add_files)
                         time.sleep(2)
                         STATUS = self.foobar2000.info(print_info=False)
+                        debug(STATUS = STATUS)
                         if not STATUS:
                             STATUS = 'Stoped'
                         if isinstance(STATUS, list):
                             STATUS = " ".join(STATUS)
                         print(make_colors("STATUS:", 'lw', 'bl'), make_colors(STATUS, 'lw', 'lr'))
-                        # if not STATUS or STATUS == None or STATUS == "None" or STATUS == 'Stoped':    
-                        #     if self.check_playlist(all_files, self.foobar2000.playlist()[0:][0]):
-                        #         self.play()
-                        
+                        if not STATUS or STATUS == None or STATUS == "None" or STATUS == 'Stoped' or STATUS == 'Stopped':    
+                            if self.check_playlist(all_files, self.foobar2000.playlist()[0:][0]):
+                                self.play()
+                        debug(add_folder_1 = add_folders[1:])
                         for i in add_folders[1:]:
                             # print("i =", i)
                             file_numbers = self.file_listing(i)
+                            debug(file_numbers = file_numbers)
                             if len(file_numbers) > 0:
                                 folder = self.format_alias_dir(i, options.dir_alias, options.level_alias, verbosity)
+                                debug(folder = folder)
                                 # print("folder =", folder)
                                 self.playFolder(folder, verbosity, False, False, options.host, options.port)
                                 
                                 all_files += file_numbers
+                                debug(all_files = all_files)
                                 current_playlist, last = self.foobar2000.playlist()[0:]
+                                debug(current_playlist = current_playlist)
+                                debug(last = last)
 
                                 if last > 0:
                                     current_playlist = []
                                     for p in range(1, last+1):
                                         cp, last = self.foobar2000.playlist(p)[0:]
                                         current_playlist += cp
-                                
+                                debug(current_playlist = current_playlist)
                                 # print("playlist =", self.foobar2000.playlist()[0])
                                 # print("len(all_files) 1 =", len(all_files))
                                 # print("len playlist   1 =", len(current_playlist))
@@ -1038,6 +1082,7 @@ class control(object):
                                 self.check_playlist(all_files, playlist = current_playlist)
     
                     else:
+                        debug("else_not_add_folders")
                         all_files = []
                         for i in options.addfolderplay:
                             file_numbers = self.file_listing(i)
