@@ -288,48 +288,88 @@ class foobar(object):
 
         soup1 = bs(data1, 'lxml')
         data2 = soup1.find(id = 'track_title')
-        # debug(data2 = data2, debug = True)
+        debug(data2 = data2)
         if not data2:
             return '', '', '', '', '', ''
         data3 = data2.text.encode('UTF-8')
+        debug(data3 = data3)
+
+        debug(re_data3 = re.findall(" \[.*? / .*? CD\d #\d+\]", data3))
+
         if "//" in data3:
-            #print "AAA"
+            debug("AAA")
             data4 = data3.split("//")
-            #print "data 4=", data4
+            debug(data4 = data4)
             if not len(data4) > 1:
                 print(make_colors("Foobar2000 is stopped !", 'lw', 'r'))
                 return None            
             artist = str(data4[-1]).strip()
+            debug(artist = artist)
             data5 = re.split("\[|\]", data4[0])
+            debug(data5 = data5)
             albumartist = data5[0]     
             data6 = re.split("CD", data5[1])
+            debug(data6 = data6)
             #print "data6 =", data6
             album = data6[0]
+            debug(album = album)
             track = data6[1][3:]
+            debug(track = track)
             cd = "CD" + data6[1][0]
+            debug(cd = cd)
             song = data5[2]
+            debug(song = song)
+        
+        elif "/" in re.findall(" \[.*? / .*? CD\d #\d+\]", data3)[0]:
+            debug("BBB")
+            # debug(data3 = data3)
+            data4 = re.split(" \[.*? / .*? CD\d #\d+\]", data3)
+            debug(data4 = data4)
+            if not len(data4) > 1:
+                print(make_colors("Foobar2000 is stopped !", 'lw', 'r'))
+                return None            
+            data_b1 = re.findall("\[(.*? / .*? CD\d #\d+)\]", data3)[0]
+            debug(data_b1 = data_b1)
+            artist = str(data4[0]).strip()
+            debug(artist = artist)
+            data5 = re.split(" \[(.*? / .*? CD\d #\d+)\]", data3)
+            debug(data5 = data5)
+            albumartist = artist
+            debug(albumartist = albumartist)
+            data6 = re.split("CD", data5[1])
+            debug(data6 = data6)
+            album = data6[0]
+            debug(album = album)
+            track = data6[1][3:]
+            debug(track = track)
+            cd = "CD" + " " + data6[1].strip()[0]
+            debug(cd = cd)
+            song = data5[2].strip()
+            debug(song = song)
         else:
-            #print "BBB"
-            #print "data3 =", data3
+            debug("CCC")
+            debug(data3 = data3)
             data4 = re.split("\[|\]", data3)
-            #print ("data4 =", data4)
+            debug(data4 = data4)
             if len(data4) > 1:
                 data5 = data4[1].split("#")
-                #print ("data5 =", data5)
+                debug(data5 = data5)
             else:
                 print(make_colors("Foobar2000 is stopped !", 'lw', 'r'))
                 return None
             
             artist = data4[0]
-            #print "artist 2 =", artist
+            debug(artist = artist)
             album = data5[0]
-            #print "album    =", album
+            debug(album = album)
             song = song = " ".join(data4[2:])
+            debug(song = song)
             track = data5[1][-2:]
-            #print "track =", track
+            debug(track = track)
             albumartist = data4[0]
+            debug(albumartist = albumartist)
             cd = "CD" + data5[1][0]
-            #print "cd    =", cd
+            debug(cd = cd)
 
         if print_info and not slim:
             print(make_colors("Artist          :", 'lc'), make_colors(artist, 'b', 'lc')) #unicode(artist).encode('UTF-8')
