@@ -297,6 +297,10 @@ class foobar(object):
 
         debug(re_data3 = re.findall(" \[.*? / .*? CD\d #\d+\]", data3))
 
+        if not data3:
+            print(make_colors("Foobar2000 Stop !", 'lw', 'r'))
+            return '', '', '', '', '', ''
+
         if "//" in data3:
             debug("AAA")
             data4 = data3.split("//")
