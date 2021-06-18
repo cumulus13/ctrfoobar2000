@@ -292,6 +292,7 @@ class foobar(object):
         if not data2:
             return '', '', '', '', '', ''
         data3 = data2.text.encode('UTF-8')
+
         debug(data3 = data3)
 
         debug(re_data3 = re.findall(" \[.*? / .*? CD\d #\d+\]", data3))

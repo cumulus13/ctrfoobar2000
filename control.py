@@ -434,7 +434,11 @@ class control(object):
             if pages:
                 print("\t PAGE:", self.printPages(pages))
                 print("\n")
-            q = input("\t " + make_colors("Do you want to play Track No ", 'lw', 'bl') + "[" + make_colors("x = exit", 'lw', 'r') + ", " + make_colors("p[number] = page number", 'b', 'y') + "]: ")
+            try:
+                q = input("\t " + make_colors("Do you want to play Track No ", 'lw', 'bl') + "[" + make_colors("x = exit", 'lw', 'r') + ", " + make_colors("p[number] = page number", 'b', 'y') + "]: ")
+            except KeyboardInterrupt:
+                sys.exit(make_colors("Exit ... !", 'lw', 'r'))
+
             print("\n")
             if q:
                 #print "PLAY TRACK", q
