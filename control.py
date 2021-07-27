@@ -339,53 +339,70 @@ class control(object):
         cd = ''
         album = ''
         album_artist = ''
-        # print("text:", text)
-        title = re.findall("\] (.*?) //", text)
-        if not title:
-            title = re.findall("\] (.*?)$", text)
-        # print("title =", title)
-        album = re.findall("\[(.*?) CD", text)
-        if not album:
-            album = ['']
-        # print("album =", album)
-        album_artist = re.findall("^(.*?) \[", text)
-        # print("album_artist =", album_artist)
-        cd = re.findall("\[.*?(CD\d+) .*?\]", text)
-        if not cd:
-            cd = ["CD1"]
-        # print("cd    =", cd)
-        track = re.findall("(#\d+)", text)
-        # print("track =", track)
-        if not track:
-            track = ["#0"]
-        artist = re.findall("// (.*?)$", text)
+        #  SawanoHiroyuki[nZk]:mizuki [Avid / Hands Up to the Sky CD1 #01] Avid
+        debug(text = text)
+        pattern = re.compile(r"(?P<albumartist>.*?) \[(?P<album>.*) CD(?P<cd>.*?) #(?P<track>.*?)\] (?P<title>.*)")
+        try:
+            album_artist, album, cd, track, title = pattern.match(text).groups()
+            cd = "CD" + cd
+            track = "#" + track
+            artist = album_artist
+        except:
+            try:
+                pattern = re.compile(r"(?P<albumartist>.*?) \[(?P<album>.*) CD(?P<cd>.*?) #(?P<track>.*?)\] (?P<title>.*?) // (?P<artist>.*)")
+                album_artist, album, cd, track, title, artist = pattern.match(text).groups()
+                cd = "CD" + cd
+                track = "#" + track
+            except:
+                pass
         if not artist:
-            artist = re.findall("^(.*?)\[", text)
-        # print("artist=", artist)
-        if title:
-            title = title[0]
-        if not title:
-            title = re.findall("\d+\.(.*?)|\d+ \.(.*?)|\d+\-(.*?)|\d+ \-(.*?)$", text)
+            # print("text:", text)
+            title = re.findall("\] (.*?) //", text)
+            if not title:
+                title = re.findall("\] (.*?)$", text)
+            # print("title =", title)
+            album = re.findall("\[(.*?) CD", text)
+            if not album:
+                album = ['']
+            # print("album =", album)
+            album_artist = re.findall("^(.*?) \[", text)
+            # print("album_artist =", album_artist)
+            cd = re.findall("\[.*?(CD\d+) .*?\]", text)
+            if not cd:
+                cd = ["CD1"]
+            # print("cd    =", cd)
+            track = re.findall("(#\d+)", text)
+            # print("track =", track)
+            if not track:
+                track = ["#0"]
+            artist = re.findall("// (.*?)$", text)
+            if not artist:
+                artist = re.findall("^(.*?)\[", text)
+            # print("artist=", artist)
             if title:
-                title = list(filter(None, title[0]))
+                title = title[0]
+            if not title:
+                title = re.findall("\d+\.(.*?)|\d+ \.(.*?)|\d+\-(.*?)|\d+ \-(.*?)$", text)
                 if title:
-                    title = title[0].strip()
-        if artist:
-            artist = artist[0]
-        if track:
-            track = track[0]
-        if not track:
-            track = re.findall("(\d+)\.|(\d+) \.|(\d+)\-|(\d+) \-", text)
+                    title = list(filter(None, title[0]))
+                    if title:
+                        title = title[0].strip()
+            if artist:
+                artist = artist[0]
             if track:
-                track = list(filter(None, track[0]))
+                track = track[0]
+            if not track:
+                track = re.findall("(\d+)\.|(\d+) \.|(\d+)\-|(\d+) \-", text)
                 if track:
-                    track = track[0].strip()
-        if cd:
-            cd = cd[0]
-        if album:
-            album = album[0]
-        if album_artist:
-            album_artist = album_artist[0]
+                    track = list(filter(None, track[0]))
+                    if track:
+                        track = track[0].strip()
+            if cd:
+                cd = cd[0]
+            if album:
+                album = album[0]
+            if album_artist:
+                album_artist = album_artist[0]
 
         return make_colors(title, 'lw', 'r') + " - " + make_colors(artist, 'lw', 'bl') + " [" + make_colors(track, 'b', 'y') + "/" + make_colors(cd, 'lw', 'm') + ". " + make_colors(album, 'b', 'lg') + "] // " + make_colors(album_artist, 'b', 'lc')
 
@@ -899,7 +916,8 @@ class control(object):
                     STATUS = self.foobar2000.info(print_info=False)
                     if not STATUS:
                         STATUS = 'Stoped'
-                    print(make_colors("STATUS:", 'lw', 'm'), make_colors(STATUS, 'lw', 'c'))
+                    if filter(None, STATUS):
+                        print(make_colors("STATUS:", 'lw', 'm'), make_colors(STATUS, 'lw', 'c'))
                     if not STATUS or STATUS == None or STATUS == "None" or STATUS == 'Stoped':
                         self.play()
                         # if self.check_playlist(add_files, self.foobar2000.playlist()[0:][0]):
@@ -1051,7 +1069,8 @@ class control(object):
                             STATUS = 'Stoped'
                         if isinstance(STATUS, list):
                             STATUS = " ".join(STATUS)
-                        print(make_colors("STATUS:", 'lw', 'bl'), make_colors(STATUS, 'lw', 'lr'))
+                        if filter(None, STATUS):
+                            print(make_colors("STATUS:", 'lw', 'bl'), make_colors(STATUS, 'lw', 'lr'))
                         if not STATUS or STATUS == None or STATUS == "None" or STATUS == 'Stoped' or STATUS == 'Stopped':    
                             if self.check_playlist(all_files, self.foobar2000.playlist()[0:][0]):
                                 self.play()
@@ -1142,7 +1161,8 @@ class control(object):
                         STATUS = 'Stoped'
                     if isinstance(STATUS, list):
                         STATUS = " ".join(STATUS)
-                    print(make_colors("STATUS:", 'lw', 'bl'), make_colors(STATUS, 'lw', 'lr'))
+                    if filter(None, STATUS):
+                        print(make_colors("STATUS:", 'lw', 'bl'), make_colors(STATUS, 'lw', 'lr'))
                     if not STATUS or STATUS == None or STATUS == "None" or STATUS == 'Stoped':
                         if self.check_playlist(all_files, self.foobar2000.playlist()[0:][0]):
                             print("Play ...")
