@@ -295,12 +295,14 @@ class foobar(object):
 
         debug(data3 = data3)
 
-        debug(re_data3 = re.findall(" \[.*? / .*? CD\d #\d+\]", data3))
+        #debug(re_data3 = re.findall(" \[.*? / .*? CD\d #\d+\]", data3))
 
         if not data3:
             print(make_colors("Foobar2000 Stop !", 'lw', 'r'))
             return '', '', '', '', '', ''
-
+        
+        if hasattr(data3, 'decode'):
+            data3 = data3.decode('utf-8')
         if "//" in data3:
             debug("AAA")
             data4 = data3.split("//")
@@ -393,7 +395,7 @@ class foobar(object):
             print(make_colors("Album           :", 'lr'), make_colors(album, 'b', 'y'))
             print(make_colors("Album Artist    :", 'lg'), make_colors(albumartist, 'b', 'lg'))
         elif print_info and slim:
-            print("\t " + make_colors("Current Playing:", 'lw', 'bl') + " " + make_colors(str(track), 'lc') + "/" + make_colors(str(cd), 'bl') + ". " + make_colors(song.strip(), 'lw', 'r') + "/" + make_colors(album, 'lw', 'm') + "/" + make_colors(albumartist, 'b', 'lg') + " - " + make_colors(artist, 'lc'))
+            print("\n\t " + make_colors("Current Playing:", 'lw', 'bl') + " " + make_colors(str(track), 'lc') + "/" + make_colors(str(cd), 'bl') + ". " + make_colors(song.strip(), 'lw', 'r') + "/" + make_colors(album, 'lw', 'm') + "/" + make_colors(albumartist, 'b', 'lg') + " - " + make_colors(artist, 'lc'))
         return artist, song.strip(), track, cd, album, albumartist
 
     def getPages(self, page=None, data = {}):

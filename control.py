@@ -62,14 +62,18 @@ class control(object):
         
         self.host = host
         self.port = port
-        self.configname = os.path.join(os.path.dirname(__file__), 'pyfoobar.ini')
+        self.configname = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'pyfoobar.ini')
+        #print("self.configname =", self.configname)
+        #with open(self.configname, 'rb') as ff:
+            #print(ff.read())
         
         cfg = configset(self.configname)
         self.cfg = cfg
         
-        self.type_foobar = cfg.options('TYPE')
+        self.type_foobar = cfg.options("TYPE")
+        print("self.type_foobar =", self.type_foobar)
         self.error = ''
-        self.nircmd = r"c:\EXE\nircmd.exe"
+        self.nircmd = r"c:\TOOLS\EXE\nircmd.exe"
         if not os.path.isfile(self.nircmd):
             self.nircmd = r"nircmd.exe"
         self.ctype = cfg.read_config('CONTROL', 'type')
@@ -115,7 +119,7 @@ class control(object):
         except:
             print(traceback.format_exc(True))
             self.check_connection()
-            print("\t Error communication with Foobar2000 [COM|HTTP] Server !")
+            print("\t Error communication with Foobar2000 [COM|HTTP] Server ! [play]")
 
     def playTrack(self, track, page=None):
         self.re_init()
@@ -142,7 +146,7 @@ class control(object):
             return self.foobar2000.stop(self.DATA)
         except:
             self.check_connection()
-            print("\t Error communication with Foobar2000 [COM|HTTP] Server !")
+            print("\t Error communication with Foobar2000 [COM|HTTP] Server ! [stop]")
 
     def pause(self):
         self.re_init()
@@ -150,7 +154,7 @@ class control(object):
             return self.foobar2000.pauseplay(self.DATA)
         except:
             self.check_connection()
-            print("\t Error communication with Foobar2000 [COM|HTTP] Server !")
+            print("\t Error communication with Foobar2000 [COM|HTTP] Server ! [pause]")
 
     def previous(self):
         self.re_init()
@@ -158,7 +162,7 @@ class control(object):
             return self.foobar2000.previous()
         except:
             self.check_connection()
-            print("\t Error communication with Foobar2000 [COM|HTTP] Server !")
+            print("\t Error communication with Foobar2000 [COM|HTTP] Server ! [previous]")
 
     def next(self):
         self.re_init()
@@ -167,7 +171,7 @@ class control(object):
         except:
             traceback.format_exc()
             self.check_connection()
-            print("\t Error communication with Foobar2000 [COM|HTTP] Server !")
+            print("\t Error communication with Foobar2000 [COM|HTTP] Server ! [next]")
 
     def random(self):
         self.re_init()
@@ -175,7 +179,7 @@ class control(object):
             return self.foobar2000.playRandom()
         except:
             self.check_connection()
-            print("\t Error communication with Foobar2000 [COM|HTTP] Server !")
+            print("\t Error communication with Foobar2000 [COM|HTTP] Server ! [random]")
 
     def volume(self, vol):
         self.re_init()
@@ -183,7 +187,7 @@ class control(object):
             return self.foobar2000.setVolumeLevel(vol)
         except:
             self.check_connection()
-            print("\t Error communication with Foobar2000 [COM|HTTP] Server !")
+            print("\t Error communication with Foobar2000 [COM|HTTP] Server ! [volume]")
 
     def mute(self):
         self.re_init()
@@ -191,7 +195,7 @@ class control(object):
             return self.foobar2000.mute()
         except:
             self.check_connection()
-            print("\t Error communication with Foobar2000 [COM|HTTP] Server !")
+            print("\t Error communication with Foobar2000 [COM|HTTP] Server ! [mute]")
 
     def info(self, slim = False):
         if not slim:
@@ -201,9 +205,9 @@ class control(object):
             self.foobar2000.info(self.DATA, slim = slim)
         except:
             #traceback.format_exc(True)
-            traceback.format_exc()
+            print(traceback.format_exc())
             self.check_connection()
-            print("\t " + make_colors("Error communication with Foobar2000 [COM|HTTP] Server !", 'lw', 'r'))
+            print("\t " + make_colors("Error communication with Foobar2000 [COM|HTTP] Server ! [info]", 'lw', 'r'))
 
     def clearPlaylist(self):
         self.re_init()
@@ -427,18 +431,18 @@ class control(object):
             if len(pl) > 9:
                 for i in range(0, 9):
                     try:
-                        print(self.format_number(str(i + 1), len(pl)) + '. ' + self.format_playlist(str(pl[i][0]).encode('UTF-8')) + "\n")
+                        print(self.format_number(str(i + 1), len(pl)) + '. ' + self.format_playlist(str(pl[i][0]).encode('UTF-8')))
                     except:
-                        sprint(self.format_number(str(i + 1), len(pl)) + '. ' + self.format_playlist(pl[i][0]) + "\n")
+                        sprint(self.format_number(str(i + 1), len(pl)) + '. ' + self.format_playlist(pl[i][0]))
                     # try:
                     #     print("-"*len(str(pl[i][0]).encode('UTF-8')))
                     # except:
                     #     sprint("-"*len(pl[i][0]))
                 for i in range(9, len(pl)):
                     try:
-                        print(self.format_number(str(i + 1), len(pl)) +  '. ' + self.format_playlist(str(pl[i][0]).encode('UTF-8')) + "\n")
+                        print(self.format_number(str(i + 1), len(pl)) +  '. ' + self.format_playlist(str(pl[i][0]).encode('UTF-8')))
                     except:
-                        print(self.format_number(str(i + 1), len(pl)) +  '. ' + self.format_playlist(unquote(pl[i][0])) + "\n")
+                        print(self.format_number(str(i + 1), len(pl)) +  '. ' + self.format_playlist(unquote(pl[i][0])))
                     # print("-"*len(unquote(pl[i][0])))
             else:
                 for i in pl:
@@ -466,7 +470,8 @@ class control(object):
                         return None
                 if q[0].lower() == 'p' and len(q) > 1:
                     return self.playlist(q[1])
-                if q == 'Previous' or q == 'First' or q == 'Next' or q == 'Last':
+                if q.lower() == 'previous' or q.lower() == 'first' or q.lower() == 'next' or q.lower() == 'last':
+                    q = q.title()
                     try:
                         page_number = re.findall("param1=.*?$", pages.get(q))[0].split('param1=')[1]
                         return self.playlist(page_number)
