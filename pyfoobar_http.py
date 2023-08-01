@@ -445,7 +445,7 @@ class foobar(object):
             data.update({'param1':str(page)})
             
         URL = self.setURL(data)
-        # print ("URL =", URL)
+        print ("URL =", URL)
         
         while 1:
             try:

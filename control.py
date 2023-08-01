@@ -1066,7 +1066,7 @@ class control(object):
                         # print("add_folders[0] =", add_folders[0])
                         self.playFolder(self.format_alias_dir(add_folders[0], options.dir_alias, options.level_alias, verbosity), verbosity, False, True, options.host, options.port)
                         all_files = self.file_listing(self.format_alias_dir(add_folders[0], options.dir_alias, options.level_alias, verbosity))
-                        debug(all_files = add_files)
+                        #debug(all_files = add_files)
                         time.sleep(2)
                         STATUS = self.foobar2000.info(print_info=False)
                         debug(STATUS = STATUS)
