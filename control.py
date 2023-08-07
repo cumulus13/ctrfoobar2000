@@ -52,7 +52,7 @@ except:
         note = make_colors("Enter to Continue . ", "lw", "lr") + "[" + page + "] " + make_colors("x|q = exit|quit", "lw", "lr")
         print(note)
         q = getch.getch()
-        if q == 'x' or q == 'q':
+        if q in ('x', 'X', 'exit', 'quit'):
             sys.exit(make_colors("EXIT !", 'lw','lr'))
 PAGE = 0
 
@@ -360,6 +360,7 @@ class control(object):
             except:
                 pass
         if not artist:
+            text = str(text)
             # print("text:", text)
             title = re.findall("\] (.*?) //", text)
             if not title:
@@ -463,7 +464,7 @@ class control(object):
             print("\n")
             if q:
                 #print "PLAY TRACK", q
-                if q == 'x':
+                if q in ('x', 'X', 'exit', 'quit'):
                     try:
                         sys.exit()
                     except:
